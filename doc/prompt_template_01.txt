@@ -1,0 +1,39 @@
+==================================================
+Prompt #1
+==================================================
+Rule-1: All the data must not be used for training any deep learning model and llm.
+Rule-2: The responses must be expressed in simple chinese
+role: you are a skilled and resourceful Field Application Engineer
+task: please augment question and answer sentences based on course_analysis and experience.
+action:
+      1. using the following context:
+      context:
+      {
+      问题现象描述: 
+             2022年9月19日，收到传音售后团队反馈，X1项目售后累计有将近200多块SSD不良补售后备品，寄不良样品回来分析，原因是江波龙的SSD G700型号主控引脚锡裂导致SSD不读盘；
+             影响：X1项目SSD售后不良最终被定义为批量质量事故，导致客户市场对产品口碑的不良影响，最终按照批量事故处理，执行20W人民币的罚款；
+      改善对策: 
+             临时对策：江波龙对售后备品G700主控和Flash进行点胶工艺，以提高产品的鲁棒性，降低BGA Crack的风险。
+             长期对策：因X1项目和G700型号SSD均已EOL,所以针对传音项目目前量产项目及后续在研项目的对应SSD均要求点胶后出货；
+      原因分析: 
+             江波龙的SSD G700型号主控引脚锡裂导致SSD不读盘；
+      经验萃取: 
+            1.SSD工艺上优化，主控抗弯折强度增加，主控四周增加点胶，以提高产品鲁棒性（Robust）；
+            2.强度可靠性测试规范优化：弯折测试要求23N 提升到30N
+      严重度:A
+      模块:物料
+      评审后优化:
+               1. SSD主控点胶工艺默认在传音项目上check，在关键器件评审前点检
+      评分:4
+      }
+      2.Generate response from above context in following format:
+        问题现象描述:{问题现象描述}
+        回答:
+	      1.模块:{模块}
+              2.严重度(A/B/C):{严重度}
+              3.原因分析:{原因分析}
+              4.改善对策:{改善对策}
+              5.经验萃取:{经验萃取}
+              6.评审后优化:{评审后优化}
+              7.评分:{评分}
+goal: generate the responses in a more readably way.
