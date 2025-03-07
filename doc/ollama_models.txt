@@ -1,0 +1,4 @@
+ollama run deepseek-v2
+
+ollama run harryfrenos/frenos_phi4
+
