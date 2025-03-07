@@ -1,0 +1,11 @@
+I have worked on a python web project for a while, the followings are the status of current project. 
+1. the index.html: 
+	1.1. The main screen contains two parts: left side-bar and right content space.
+	1.2. There are three items on the left side-bar:<home>,<models>,<chat-history>
+	1.3. Contents of <home>
+		 1.3.1. The <home> part contains a card-based services selection ui shown on the right content space.
+		 1.3.2. Currently, we have four card:[AI聊天],[寫作建議],[規範FAQ],[K9商城小助手].
+		 1.3.3. Each card stands for an llm agent and has its own ui-layout.
+		 1.3.4. We use index.html-> <home> -> [card name] to refer we discuss on which part of the web system.
+	1.4. Contents of 
+	
