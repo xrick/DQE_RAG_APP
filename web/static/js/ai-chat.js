@@ -1,7 +1,7 @@
 // ai-chat.js
 (function () {
     console.log("ai-chat.js 加載完成！");
-
+    console.log("it has invoke！");
     // 定義初始化聊天介面的函數
     function initializeChatInterface() {
         const maxRetries = 10;
@@ -9,10 +9,26 @@
     
         function tryInitialize() {
             console.log("嘗試初始化聊天介面...");
-            const chatContainer = document.getElementById("chat-container");
-            const messageInput = document.getElementById("message-input");
-            const sendButton = document.getElementById("send-button");
+            // const chatContainer = document.getElementById("chat-container");
+            // const messageInput = document.getElementById("message-input");
+            // const sendButton = document.getElementById("send-button");
+            const chatContainer = document.getElementById("preview");
+            const messageInput = document.getElementById("editor");
+            const sendButton = document.getElementById("submit");
+            
+            // function updatePreview() {
+            //     const markdown = editor.value;
+            //     const html = marked.parse(markdown);
+            //     preview.innerHTML = html;
+            // }
     
+            // submit.addEventListener('click', updatePreview);
+            // editor.addEventListener('keydown', (e) => {
+            //     if (e.ctrlKey && e.key === 'Enter') {
+            //         updatePreview();
+            //     }
+            // });
+
             if (!chatContainer || !messageInput || !sendButton) {
                 if (retryCount < maxRetries) {
                     retryCount++;
@@ -87,8 +103,8 @@
 
     // 發送消息的輔助函數
     function sendMessage(message) {
-        const chatContainer = document.getElementById("chat-container");
-        const messageInput = document.getElementById("message-input");
+        const chatContainer = document.getElementById("preview");
+        const messageInput = document.getElementById("editor");
 
         if (!chatContainer || !messageInput) {
             console.error("聊天框或輸入框未找到！");
@@ -132,6 +148,17 @@
 
     // 添加消息到聊天框的輔助函數
     // 配置 marked.js 使用 highlight.js
+    // marked.setOptions({
+    //     highlight: function(code, lang) {
+    //         if (lang && hljs.getLanguage(lang)) {
+    //             return hljs.highlight(code, { language: lang }).value;
+    //         }
+    //         return hljs.highlightAuto(code).value;
+    //     },
+    //     breaks: true,
+    //     gfm: true
+    // });
+
     marked.setOptions({
         highlight: function(code, lang) {
             if (lang && hljs.getLanguage(lang)) {
@@ -139,12 +166,12 @@
             }
             return hljs.highlightAuto(code).value;
         },
-        breaks: true,
-        gfm: true
+        langPrefix: 'hljs language-'
     });
 
     function appendMessage(role, text) {
-        const chatContainer = document.getElementById("chat-container");
+        const chatContainer = document.getElementById("preview");
+        
         if (!chatContainer) {
             console.error("找不到聊天容器！");
             return;
@@ -165,17 +192,20 @@
         contentDiv.className = "markdown-content prose " + 
             (role === "user" ? "prose-invert" : "");
         
-        // 使用 marked 解析 Markdown
+        // // 使用 marked 解析 Markdown
         contentDiv.innerHTML = marked.parse(text);
 
         messageDiv.appendChild(contentDiv);
         messageWrapper.appendChild(messageDiv);
         chatContainer.appendChild(messageWrapper);
         
-        // 對新添加的代碼塊應用語法高亮
+        // // 對新添加的代碼塊應用語法高亮
         messageDiv.querySelectorAll('pre code').forEach((block) => {
             hljs.highlightElement(block);
         });
+        // const markdown = text;//editor.value;
+        // const html = marked.parse(markdown);
+        // preview.innerHTML = html;
 
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }

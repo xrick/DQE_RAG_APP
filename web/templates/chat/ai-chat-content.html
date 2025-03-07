@@ -1,96 +1,98 @@
-<!-- File: templates/ai-chat-content.html -->
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <!-- Marked.js -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Preview with Enhanced Code Highlighting</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <!-- Highlight.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    
-    <!-- Highlight.js CSS 主題 (可以選擇其他主題) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
-
+    <!-- Changed theme to atom-one-dark for better color highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
         }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out;
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+            gap: 10px;
         }
-
-
-        .markdown-content {
-            font-size: 0.95rem;
+        #preview {
+            flex: 2;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-section {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            height:10vh
+        }
+        #editor {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
             line-height: 1.5;
+            height: 100%;
         }
-        
-        .markdown-content pre {
-            margin: 0.5rem 0;
-            padding: 1rem;
-            border-radius: 6px;
-            background: #1e1e1e !important;
+        #submit {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
-        
-        .markdown-content code {
+        #submit:hover {
+            background-color: #45a049;
+        }
+        /* Enhanced code block styling */
+        pre {
+            background-color: #6894f3 !important;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        pre code {
             font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.9em;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 20px !important;
+            border-radius: 8px;
         }
-        
-        /* 內聯代碼樣式 */
-        .markdown-content :not(pre) > code {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
+        /* Additional syntax highlighting customization */
+        .hljs-keyword {
+            color: #c678dd !important;
         }
-        
-        /* 用戶消息中的代碼樣式 */
-        .prose-invert :not(pre) > code {
-            background: rgba(255, 255, 255, 0.2);
+        .hljs-string {
+            color: #98c379 !important;
         }
-        
-        /* 確保代碼塊內的文字顏色正確 */
-        .prose-invert pre code {
-            color: #e0e0e0;
+        .hljs-comment {
+            color: #5c6370 !important;
+            font-style: italic;
         }
-        
-        /* 調整列表和引用樣式 */
-        .markdown-content ul, .markdown-content ol {
-            margin-left: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
-        
-        .markdown-content blockquote {
-            border-left: 4px solid rgba(0, 0, 0, 0.1);
-            padding-left: 1rem;
-            margin: 0.5rem 0;
-        }
-        
-        .prose-invert blockquote {
-            border-left-color: rgba(255, 255, 255, 0.3);
-        }
-
     </style>
 </head>
-
 <body>
-    <div class="h-full flex flex-col">
-        <!-- 聊天記錄區域 -->
-        <div id="chat-container" class="flex-1 flex flex-col space-y-4 p-4 overflow-y-auto">
-        </div>
-        
-        <!-- 輸入區域 -->
-        <div class="p-4 border-t">
-            <div class="flex gap-2">
-                <input type="text" id="message-input" class="flex-1 rounded-lg border p-2" placeholder="請輸入訊息...">
-                <button id="send-button" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">發送</button>
-            </div>
+    <div class="container">
+        <div id="preview"></div>
+        <div class="input-section">
+            <textarea id="editor" placeholder="Enter your markdown here..."></textarea>
+            <button id="submit">送出</button>
         </div>
     </div>
 
-
-<!-- 引入外部腳本 -->
-<!-- <script src="/static/js/ai-chat.js"></script> -->
 </body>
 </html>
