@@ -111,7 +111,7 @@ async def generate(message: str = None, submessages: dict = None, history: List[
         Please strictly follow the following format to generate the responses.
         Please generate the responses using makrdown format
         A.问题现象描述: {question}      
-        B.回答:        
+        B.回答:   <br>    
             1.模块: {module}    
             2.严重度(A/B/C): {severity}    
             3.原因分析: {cause}    
