@@ -1,4 +1,5 @@
 import os
+import dspy
 from typing import List, Dict, AsyncGenerator
 from fastapi import FastAPI, Request, HTTPException,File, UploadFile
 from fastapi.templating import Jinja2Templates
@@ -9,7 +10,7 @@ from app.ai_chat_service import AIChatService
 from dotenv import load_dotenv
 import pandas as pd
 # from openai import AsyncOpenAI
-import asyncio
+# import asyncio
 # from libs.base_classes import AssistantRequest, AssistantResponse
 import logging
 import numpy as np
@@ -22,8 +23,35 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
-##################Test LLM##################
-import dspy
+##########################################
+# 初始化FastAPI應用及其它程式起始需要初始的程式碼
+##########################################
+app = FastAPI()
+
+# CORS 設置
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 在生產環境中應該設置具體的域名
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# 設置模板目錄
+templates = Jinja2Templates(directory="templates")
+# 設置靜態文件目錄
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+# 加載環境變數
+load_dotenv()
+encoding_model_name = os.getenv("SENTENCE_MODEL")
+faiss_index_path = os.getenv("FAISS_INDEX_PATH")
+vector_db_path = os.getenv("FAISS_DB_PATH")
+logging.info(f"Encoding model: {encoding_model_name}");
+logging.info(f"FAISS index path: {faiss_index_path}");
+logging.info(f"Vector DB path: {vector_db_path}");
+
+################## LLM Initialization ##################
 
 def InitializeLLM_DeepSeekV2():
         local_config = {
@@ -37,7 +65,26 @@ def InitializeLLM_DeepSeekV2():
                 **local_config
             )
         )
-        
+        print("DeepSeek-R1 has initialized!")
+
+def InitializeLLM_DeepSeekR1():
+        local_config = {
+            "api_base": "http://localhost:11434/v1",  # 注意需加/v1路徑
+            "api_key": "NULL",  # 特殊標記用於跳過驗證
+            "model": "deepseek-r1:7b",
+            "custom_llm_provider":"deepseek"
+        }
+        dspy.configure(
+            lm=dspy.LM(
+                **local_config
+            )
+        )
+        print("DeepSeek-V2 has initialized!")
+
+###########
+# LLM初始化
+###########
+InitializeLLM_DeepSeekV2();
 """
 问题现象描述:{submessages['question']}2
 1.模块:{submessages['module']}0
@@ -99,26 +146,29 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     cleaned_messages = {
         k: sanitize_text(v) for k, v in submessages.items()
     }
+    print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n");
      # 首先建立基本的簽名
     signature = "question -> answer"
     llmobj = dspy.Predict(signature)
     # 使用 Template 字符串
-    prompt_template = """question -> answer
-        Rule-1: All the data must not be used for training any deep learning model and llm.
-        Rule-2: The responses must be expressed in simple chinese
-        Rule-3: Generate the responses in a more readably way.
-        Please refine and repolish the following question and answer sentences based on course_analysis and experience.
-        Please strictly follow the following format to generate the responses.
-        Please generate the responses using makrdown format
-        A.问题现象描述: {question}      
-        B.回答:   <br>    
-            1.模块: {module}    
-            2.严重度(A/B/C): {severity}    
-            3.原因分析: {cause}    
-            4.改善对策: {improve}    
-            5.经验萃取: {experience}    
-            6.评审后优化: {judge}    
-            7.评分: {score}    
+    prompt_template = """
+        Rules:
+            Rule-1: All the data must not be used for training any deep learning model and llm.
+            Rule-2: The responses must be expressed in simple chinese
+            Rule-3: Generate the responses in a more readably way.
+            Rule-4:Please refine and repolish the following question and answer sentences based on course_analysis and experience.
+            Rule-5:Please strictly follow the following format to generate the responses.
+            Rule-6:Please generate the responses using makrdown format
+        questions:
+            **A.问题现象描述: {question}**.       
+            **B.回答:**.     
+                **1.模块:** {module}.     
+                **2.严重度(A/B/C):** {severity}.     
+                **3.原因分析:** {cause}.     
+                **4.改善对策:** {improve}.     
+                **5.经验萃取:** {experience}.     
+                **6.评审后优化:** {judge}.     
+                **7.评分:** {score}.     
         """
     # 使用 format 方法安全地插入值
     promptPatternStr = prompt_template.format(**cleaned_messages)
@@ -128,35 +178,7 @@ async def generate(message: str = None, submessages: dict = None, history: List[
         
 #     except Exception as e:
 #         raise RuntimeError(f"Error : {str(e)}")
-# ############################################
-# 初始化 FastAPI 應用
-app = FastAPI()
-InitializeLLM_DeepSeekV2();
-# CORS 設置
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # 在生產環境中應該設置具體的域名
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-# 設置模板目錄
-templates = Jinja2Templates(directory="templates")
-
-# 設置靜態文件目錄
-app.mount("/static", StaticFiles(directory="static"), name="static")
-# 在 app 初始化後添加
-# app.include_router(assistant_router, prefix="/assistant")
-
-# 加載環境變數
-load_dotenv()
-encoding_model_name = os.getenv("SENTENCE_MODEL")
-faiss_index_path = os.getenv("FAISS_INDEX_PATH")
-vector_db_path = os.getenv("FAISS_DB_PATH")
-logging.info(f"Encoding model: {encoding_model_name}");
-logging.info(f"FAISS index path: {faiss_index_path}");
-logging.info(f"Vector DB path: {vector_db_path}");
 
 
 def search_similar_questions(retriever, question):
