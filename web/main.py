@@ -1,4 +1,5 @@
 import os
+from typing import List, Dict, AsyncGenerator
 from fastapi import FastAPI, Request, HTTPException,File, UploadFile
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -6,22 +7,131 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.ai_chat_service import AIChatService
 from dotenv import load_dotenv
+import pandas as pd
 # from openai import AsyncOpenAI
 import asyncio
-# from libs.routers.assistant_routes import router as assistant_router
-# from libs.service_manager import AssistantServiceManager    
 # from libs.base_classes import AssistantRequest, AssistantResponse
 import logging
-# from libs.ocr_content import *
-# OCR Libraries
-# import pytesseract
-# from PIL import Image
-# import io
-# import pdf2image
+import numpy as np
 from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
+import json 
+###setup debug
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler()]
+)
+
+##################Test LLM##################
+import dspy
+
+def InitializeLLM_DeepSeekV2():
+        local_config = {
+            "api_base": "http://localhost:11434/v1",  # 注意需加/v1路徑
+            "api_key": "NULL",  # 特殊標記用於跳過驗證
+            "model": "deepseek-v2",
+            "custom_llm_provider":"deepseek"
+        }
+        dspy.configure(
+            lm=dspy.LM(
+                **local_config
+            )
+        )
+        
+"""
+问题现象描述:{submessages['question']}2
+1.模块:{submessages['module']}0
+2.严重度(A/B/C):{submessages['severity']}1
+3.原因分析:{submessages['cause']}3
+4.改善对策:{submessages['improve']}4
+5.经验萃取:{submessages['experience']}5
+6.评审后优化:{submessages['judge']}6
+7.评分:{submessages['score']}7
+"""
+# async def generate(message:str=None, submessages:dict=None, history: List[Dict[str, str]] = None, model: str = "deepseekv2") -> str:
+#         if message == None:
+#             raise ValueError("query string is none, please input query string.")
+#         # try:
+#             # MainpromptPatternStr = "{question} -> answer"# old
+#         promptPatternStr ="""
+#             context:
+#                 Rule-1: All the data must not be used for training any deep learning model and llm.
+#                 Rule-2: The responses must be expressed in simple chinese
+#                 role: you are a skilled and resourceful Field Application Engineer
+#                 task: please refine question and answer sentences based on course_analysis and experience.
+#                 action:
+#                     A.Generate response from above context in following format:
+#                         问题现象描述: %s
+#                         回答:
+#                             1.模块: %s
+#                             2.严重度(A/B/C): %s
+#                             3.原因分析: %s
+#                             4.改善对策: %s
+#                             5.经验萃取: %s
+#                             6.评审后优化: %s
+#                             7.评分: %s
+#                 goal: generate the responses in a more readably way.
+#             question -> answer
+#             """ % (
+#                 submessages[2],
+#                 submessages[0],
+#                 submessages[1],
+#                 submessages[3],
+#                 submessages[4],
+#                 submessages[5],
+#                 submessages[6],
+#                 submessages[7]
+#             )
+#         # MainpromptPatternStr = MainpromptPatternStr.format(question=promptPatternStr);
+#         llmobj = dspy.Predict(promptPatternStr);
+#         response = llmobj(question=message);
+#         print(f"response: {response.answer}");
+#         return response.answer;
+        # except Exception as e:
+        #      print(e);
+            # raise RuntimeError(f"Error : {e}")
+async def generate(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2") -> str:
+    if message is None:
+        raise ValueError("query string is none, please input query string.")
+    
+    # try:
+    # 清理所有輸入數據
+    cleaned_messages = {
+        k: sanitize_text(v) for k, v in submessages.items()
+    }
+     # 首先建立基本的簽名
+    signature = "question -> answer"
+    llmobj = dspy.Predict(signature)
+    # 使用 Template 字符串
+    prompt_template = """question -> answer
+        Rule-1: All the data must not be used for training any deep learning model and llm.
+        Rule-2: The responses must be expressed in simple chinese
+        Rule-3: Generate the responses in a more readably way.
+        Please refine and repolish the following question and answer sentences based on course_analysis and experience.
+        Please strictly follow the following format to generate the responses.
+        Please generate the responses using makrdown format
+        A.问题现象描述: {question}      
+        B.回答:        
+            1.模块: {module}    
+            2.严重度(A/B/C): {severity}    
+            3.原因分析: {cause}    
+            4.改善对策: {improve}    
+            5.经验萃取: {experience}    
+            6.评审后优化: {judge}    
+            7.评分: {score}    
+        """
+    # 使用 format 方法安全地插入值
+    promptPatternStr = prompt_template.format(**cleaned_messages)
+    # 創建預測對象並返回結果
+    response = llmobj(question=promptPatternStr)
+    return response.answer
+        
+#     except Exception as e:
+#         raise RuntimeError(f"Error : {str(e)}")
+# ############################################
 # 初始化 FastAPI 應用
 app = FastAPI()
-
+InitializeLLM_DeepSeekV2();
 # CORS 設置
 app.add_middleware(
     CORSMiddleware,
@@ -43,35 +153,29 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 load_dotenv()
 encoding_model_name = os.getenv("SENTENCE_MODEL")
 faiss_index_path = os.getenv("FAISS_INDEX_PATH")
-vector_db_path = os.getenv("VECTOR_DB_PATH")
+vector_db_path = os.getenv("FAISS_DB_PATH")
 logging.info(f"Encoding model: {encoding_model_name}");
-logging.infog(f"FAISS index path: {faiss_index_path}");
+logging.info(f"FAISS index path: {faiss_index_path}");
 logging.info(f"Vector DB path: {vector_db_path}");
-# _api_key = "ihfashi42423#@@$@";#os.getenv("OPENAI_API_KEY")
-# logging.info("openai api key: " + _api_key);
-# if not _api_key:
-#     raise ValueError("OPENAI_API_KEY environment variable is not set")
 
-# 添加配置
-# ASSISTANT_CONFIG = {
-#     "ESSAY_ADVISOR_ID": "asdfasgagafsadfad",#os.getenv("ESSAY_ADVISOR_ASSISTANT_ID"),
-#     "K9_HELPER_ID": "sadfdsfasdfsdadfad"#os.getenv("K9_HELPER_ASSISTANT_ID")
-# }
+
+def search_similar_questions(retriever, question):
+    pos, distances = retriever(question)
+    return pos, distances
+
 
 @app.on_event("startup")
 async def startup_event():
-    global ai_chat_service
+    # global ai_chat_service
     global faiss_retriever
-    # global service_manager
-    # global async_client
+    global dfObj;
     try:
         logging.info("start to initialize services.......");
-        ai_chat_service = AIChatService(); # 初始化 KB聊天物件
-        faiss_retriever = CustomFAISSRetriever(faiss_index_path, vector_db_path, encoding_model_name); # 初始化 faiss 檢索物件
+        # ai_chat_service = AIChatService(); # 初始化 KB聊天物件
+        print(f"vector db path: {vector_db_path}");
+        faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path=vector_db_path, model_name=encoding_model_name); # 初始化 faiss 檢索物件
+        dfObj = pd.read_csv('./db/raw/deq_learn_refine2_correct.csv', encoding='utf-8-sig'); # 初始化 faiss 檢索物件
         # 初始化助手服務管理器
-        # async_client = AsyncOpenAI(api_key=_api_key);
-        # service_manager = AssistantServiceManager.initialize(async_client)
-        # service_manager.initialize_services(ASSISTANT_CONFIG)
         logging.info("chat, essay-advisor, k9-helper services are initialized!");
     except Exception as e:
         logging.error(f"Failed to run in startup_event: {e}");
@@ -81,33 +185,6 @@ async def startup_event():
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
-
-# AI 聊天模板
-# @app.get("/ai-chat", response_class=HTMLResponse)
-# async def get_chat_template(request: Request):
-#     return templates.TemplateResponse("ai-chat-content.html", {"request": request})
-
-# Essay Advisor 模板
-# @app.get("/essay-advisor", response_class=HTMLResponse)
-# async def get_essay_advisor_template():
-#     # return templates.TemplateResponse("templates/essay_advisor/content.html", {"request": request})
-#     try:
-#         with open("templates/essay_advisor/content.html", "r", encoding="utf-8") as file:
-#             content = file.read()
-#         return HTMLResponse(content)
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Failed to load chat content: {str(e)}")
-
-# K9 Helper 模板
-# @app.get("/k9-helper", response_class=HTMLResponse)
-# async def get_k9_helper_template():
-#     # return templates.TemplateResponse("templates/k9_helper/content.html", {"request": request})
-#     try:
-#         with open("templates/k9_helper/content.html", "r", encoding="utf-8") as file:
-#             content = file.read()
-#         return HTMLResponse(content)
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Failed to load chat content: {str(e)}")
 
 
 # 聊天內容模板
@@ -120,34 +197,118 @@ async def get_chat_content():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load chat content: {str(e)}")
     
-# OCR Content Generation
-# @app.get("/ocr-page", response_class=HTMLResponse)
-# async def get_ocr_content():
-#     try:
-#         with open("templates/ocr/ocr_page.html", "r", encoding="utf-8") as file:
-#             content = file.read()
-#         return HTMLResponse(content)
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Failed to load ocr service page: {str(e)}")
+
+def sanitize_text(text):
+    if pd.isna(text):
+        return ""
+    
+    # 基本清理
+    text = str(text).strip()
+    
+    # 移除換行符
+    text = text.replace('\n', ' ').replace('\r', ' ')
+    
+    # 替換中文標點
+    punctuation_map = {
+        '，': ',', '。': '.', '：': ':', '；': ';',
+        '"': '"', '"': '"', ''': "'", ''': "'",
+        '！': '!', '？': '?', '（': '(', '）': ')',
+        '【': '[', '】': ']', '、': ',', '「': '"',
+        '」': '"', '『': "'", '』': "'"
+    }
+    for ch, en in punctuation_map.items():
+        text = text.replace(ch, en)
+    
+    # 轉義引號和其他特殊字符
+    text = text.replace('"', '\\"').replace("'", "\\'")
+    
+    return text
+
+
+def replace_chinese_punctuation(text):
+    if pd.isna(text):  # 處理 NaN 值
+        return ""
+    
+    # 更新替換對照表
+    punctuation_map = {
+        '，': ',',
+        '。': '.',
+        '：': ':',
+        '；': ';',
+        '"': '"',
+        '"': '"',
+        ''': "'",
+        ''': "'",
+        '！': '!',
+        '？': '?',
+        '（': '(',
+        '）': ')',
+        '【': '[',
+        '】': ']',
+        '、': ',',
+        '「': '"',
+        '」': '"',
+        '『': "'",
+        '』': "'"
+    }
+    
+    # 進行替換
+    result = str(text)
+    for ch, en in punctuation_map.items():
+        result = result.replace(ch, en)
+    
+    # 使用 json.dumps 處理特殊字符轉義
+    return json.dumps(result, ensure_ascii=False)[1:-1]  # 移除 json.dumps 產生的外層引號
+
+def getSubMessages(df_row):
+    return {
+        "question": replace_chinese_punctuation(str(df_row['问题现象描述'])),
+        "module": replace_chinese_punctuation(str(df_row['模块'])),
+        "severity": replace_chinese_punctuation(str(df_row['严重度'])),
+        "cause": replace_chinese_punctuation(str(df_row['原因分析'])),
+        "improve": replace_chinese_punctuation(str(df_row['改善对策'])),
+        "experience": replace_chinese_punctuation(str(df_row['经验萃取'])),
+        "judge": replace_chinese_punctuation(str(df_row['评审后优化'])),
+        "score": replace_chinese_punctuation(str(df_row['评分']))
+    }
 
 # AI 聊天接口（非流式）
 @app.post("/api/ai-chat")
 async def api_ai_chat(request: Request):
-    try:
+    # try:
         # 從請求中提取用戶消息
         data = await request.json()
-        message = data.get("message")
-        history = data.get("history", [])
-        if not message:
-            raise HTTPException(status_code=400, detail="Message is required")
+        _pos, _distances = search_similar_questions(faiss_retriever, data.get("message"))
+        max_pos = np.amax(_pos[0]);
+        print(max_pos);
+        # for i in _pos[0]:
+        # if _distances[0][0] > 0.5:
+        #     ai_response = "您好，无法找到相似问题，请重新输入。"
+        #     return {"response": ai_response};
+        # # for i in _pos[0]:
+        # if _distances[0][0] < 0.5:
+        message = dfObj.iloc[max_pos].to_string();#data.get("message")
+        message = replace_chinese_punctuation(message);
+        # print(message);
+        _submessages = getSubMessages(dfObj.iloc[max_pos]);
+        # _submessages = replace_chinese_punctuation(str(_submessages));
+
+        # history = data.get("history", [])
+        # if not message:
+        #     raise HTTPException(status_code=400, detail="Message is required")
         # 調用 AIChatService 的生成方法
-        ai_response = await ai_chat_service.generate(message, history)
+        
+        ai_response = await generate(message=message, submessages=_submessages);
+        print(type(ai_response))
         # 返回 AI 的回應
         return {"response": ai_response}; 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-# @app.post("/api/ai-chat")
-# async def api_ai_chat(request: Request):
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
+
+
+# AI 聊天接口（流式）
+# @app.post("/api/ai-chat-stream")
+# async def api_ai_chat_stream(request: Request):
 #     try:
 #         # 從請求中提取用戶消息
 #         data = await request.json()
@@ -155,156 +316,15 @@ async def api_ai_chat(request: Request):
 #         history = data.get("history", [])
 #         if not message:
 #             raise HTTPException(status_code=400, detail="Message is required")
-#         # 調用 AIChatService 的生成方法
-#         ai_response = await ai_chat_service.generate(message, history)
+#         # 調用 AIChatService 的流式生成方法
+#         async def stream_generator():
+#             async for chunk in ai_chat_service.generate_stream(message, history):
+#                 yield {"content": chunk}
 
-#         # 返回 AI 的回應
-#         return {"response": ai_response}
+#         return stream_generator()
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=str(e))
-
-# AI 聊天接口（流式）
-@app.post("/api/ai-chat-stream")
-async def api_ai_chat_stream(request: Request):
-    try:
-        # 從請求中提取用戶消息
-        data = await request.json()
-        message = data.get("message")
-        history = data.get("history", [])
-        if not message:
-            raise HTTPException(status_code=400, detail="Message is required")
-        # 調用 AIChatService 的流式生成方法
-        async def stream_generator():
-            async for chunk in ai_chat_service.generate_stream(message, history):
-                yield {"content": chunk}
-
-        return stream_generator()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
     
-# Essay Advisor API
-# @app.post("/api/essay-advisor")
-# async def essay_advisor_endpoint(request: Request):
-#     try:
-#         data = await request.json()
-#         message = data.get("message", "")
-#         if not message:
-#             return JSONResponse(
-#                 status_code=400,
-#                 content={"error": "Message cannot be empty"}
-#             )
-#         response = await service_manager.handle_essay_advisor(message)
-#         return {"response": response}
-#     except Exception as e:
-#         logging.error(f"Essay Advisor error: {str(e)}")
-#         return JSONResponse(
-#             status_code=500,
-#             content={"error": "Internal server error"}
-#         )
-
-# # K9 Helper API
-# @app.post("/api/k9-helper")
-# async def k9_helper_endpoint(request: Request):
-#     try:
-#         data = await request.json()
-#         message = data.get("message", "")
-#         if not message:
-#             return JSONResponse(
-#                 status_code=400,
-#                 content={"error": "Message cannot be empty"}
-#             )
-#         response = await service_manager.handle_k9_helper(message)
-#         return {"response": response}
-#     except Exception as e:
-#         logging.error(f"K9 Helper error: {str(e)}")
-#         return JSONResponse(
-#             status_code=500,
-#             content={"error": "Internal server error"}
-#         )
-
-# # 文件上傳 API
-# @app.post("/upload_file")
-# async def upload_file(file: UploadFile = File(...)):
-#     try:
-#         # 確保上傳目錄存在
-#         upload_dir = "upload_tmp"
-#         os.makedirs(upload_dir, exist_ok=True)
-
-#         # 保存文件
-#         file_path = os.path.join(upload_dir, file.filename)
-#         with open(file_path, "wb") as f:
-#             f.write(await file.read())
-
-#         return JSONResponse(content={"message": "File uploaded successfully", "filename": file.filename}, status_code=200)
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
-
-"""
-Assistant API Call
-"""
-# async def call_assistant(prompt: str, assistant_id: str) -> tuple[str, str]:
-#     try:
-#         # 建立 thread
-#         thread = await client.beta.threads.create()
-        
-#         # 新增訊息
-#         await client.beta.threads.messages.create(
-#             thread_id=thread.id,
-#             role="user",
-#             content=prompt
-#         )
-        
-#         # 執行 assistant
-#         run = await client.beta.threads.runs.create(
-#             thread_id=thread.id,
-#             assistant_id=assistant_id
-#         )
-        
-#         # 等待完成
-#         while True:
-#             run = await client.beta.threads.runs.retrieve(
-#                 thread_id=thread.id,
-#                 run_id=run.id
-#             )
-#             if run.status == "completed":
-#                 break
-#             elif run.status in ["failed", "expired"]:
-#                 raise HTTPException(
-#                     status_code=500,
-#                     detail=f"Assistant run {run.status}"
-#                 )
-#             await asyncio.sleep(1)
-        
-#         # 獲取回應
-#         messages = await client.beta.threads.messages.list(
-#             thread_id=thread.id
-#         )
-        
-#         return messages.data[0].content[0].text.value, thread.id
-
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-# @app.post("/assistant", response_model=AssistantResponse)
-# async def ask_assistant(request: AssistantRequest):
-#     """
-#     端點用於與 OpenAI Assistant 互動
-#     """
-#     try:
-#         response, thread_id = await call_assistant(
-#             request.prompt,
-#             request.assistant_id
-#         )
-        
-#         return AssistantResponse(
-#             response=response,
-#             thread_id=thread_id
-#         )
-        
-#     except HTTPException as he:
-#         raise he
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
 
 # 錯誤處理
 @app.exception_handler(HTTPException)

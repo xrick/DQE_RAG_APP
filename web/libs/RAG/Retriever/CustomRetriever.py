@@ -36,17 +36,17 @@ class CustomFAISSRetriever(dspy.Retrieve):
             return None
 
     def load_local_db(self, local_db_path=None, embeddings=None):
-        try:
-            db = LangchainFAISS.load_local(
-                folder_path=local_db_path,
-                embeddings=embeddings,
-                allow_dangerous_deserialization=True
-            )
-            print(f"載入成功，共 {db.index.ntotal} 筆技術問答")
-            return db
-        except Exception as e:
-            print(f"向量庫載入異常: {str(e)}")
-            return None
+        # try:
+        db = LangchainFAISS.load_local(
+            folder_path=local_db_path,
+            embeddings=embeddings,
+            allow_dangerous_deserialization=True
+        )
+        print(f"載入成功，共 {db.index.ntotal} 筆技術問答")
+        return db
+        # except Exception as e:
+        #     print(f"向量庫載入異常: {str(e)}")
+        #     return None
             
     
 
@@ -67,4 +67,4 @@ class CustomFAISSRetriever(dspy.Retrieve):
         print(distance)
         print(pos)
         # return the pos for retrieving data from answers
-        return pos;
+        return pos, distance;

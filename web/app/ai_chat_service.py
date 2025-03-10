@@ -1,12 +1,12 @@
 import dspy;
 from typing import List, Dict, AsyncGenerator
-import openai;
+# import openai;
 
 
 class AIChatService:
     def __init__(self):
         # self.InitializeLLM_Phi4();
-        self.InitializeLLM_Llama();
+        self.InitializeLLM_DeepSeekV2();
 
     def InitializeLLM_DeepSeekR1(self):
         local_config = {

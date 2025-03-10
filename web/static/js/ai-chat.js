@@ -126,24 +126,24 @@
             },
             body: JSON.stringify({ message }),
         })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log("後端回應：", data);
-                if (data && data.response) {
-                    appendMessage("ai", data.response);
-                } else {
-                    appendMessage("error", "後端未返回有效回應！");
-                }
-            })
-            .catch((error) => {
-                console.error("請求失敗：", error);
-                appendMessage("error", "無法連接到後端，請稍後再試！");
-            });
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log("後端回應：", data);
+            if (data && data.response) {
+                appendMessage("ai", data.response);
+            } else {
+                appendMessage("error", "後端未返回有效回應！");
+            }
+        })
+        .catch((error) => {
+            console.error("請求失敗詳情:", error);
+            appendMessage("error", `連接失敗: ${error.message}`);
+        });
     }
 
     // 添加消息到聊天框的輔助函數
