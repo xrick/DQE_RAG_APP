@@ -38,14 +38,48 @@ class AIChatService:
             )
         )
 
+    def InitializeLLM_DeepSeekV2(self):
+        local_config = {
+            "api_base": "http://localhost:11434/v1",  # 注意需加/v1路徑
+            "api_key": "NULL",  # 特殊標記用於跳過驗證
+            "model": "deepseek-v2",
+            "custom_llm_provider":"deepseek"
+        }
+        dspy.configure(
+            lm=dspy.LM(
+                **local_config
+            )
+        )
 
-    async def generate(self, message: str, history: List[Dict[str, str]] = None, model: str = "gpt-4") -> str:
+
+    async def generate(self, message:str=None, submessages:dict=None, history: List[Dict[str, str]] = None, model: str = "deepseekv2") -> str:
         if message == None:
             raise ValueError("query string is none, please input query string.")
         try:
-            promptPatternStr = "question -> answer"
-            qa = dspy.Predict(promptPatternStr);
-            response = qa(question=message);
+            # promptPatternStr = "question -> answer"# old
+            promptPatternStr = f"""
+                Rule-1: All the data must not be used for training any deep learning model and llm.
+                Rule-2: The responses must be expressed in simple chinese
+                role: you are a skilled and resourceful Field Application Engineer
+                task: please augment question and answer sentences based on course_analysis and experience.
+                action:
+                    1. using the following context:
+                    context:
+                    {message}
+                    2.Generate response from above context in following format:
+                        问题现象描述:{submessages['question']}
+                        回答:
+                        1.模块:{submessages['module']}
+                            2.严重度(A/B/C):{submessages['severity']}
+                            3.原因分析:{submessages['cause']}
+                            4.改善对策:{submessages['improve']}
+                            5.经验萃取:{submessages['experience']}
+                            6.评审后优化:{submessages['judge']}
+                            7.评分:{submessages['score']}
+                goal: generate the responses in a more readably way.
+                            """
+            llmobj = dspy.Predict(promptPatternStr);
+            response = llmobj(question=message);
             return response.answer;
         except Exception as e:
             raise RuntimeError(f"Error : {e}")

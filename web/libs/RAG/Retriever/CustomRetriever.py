@@ -3,9 +3,30 @@ import faiss
 from sentence_transformers import SentenceTransformer
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS as LangchainFAISS
+import numpy as np
 
 class CustomFAISSRetriever(dspy.Retrieve):
-    def load_index(self, idx_path=None):
+    def __init__(self, faiss_index_path:str=None, vector_db_path:str=None, model_name:str=None, k=3):
+        super().__init__()
+        self.k = k
+        # 使用同一個模型名稱
+        self.model_name = model_name;#"paraphrase-multilingual-MiniLM-L12-v2"
+        
+        # 初始化 embeddings
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name=self.model_name
+        )
+        
+        # 載入 FAISS 索引
+        self.index = self.load_index(faiss_index_path)
+        
+        # 載入向量庫
+        self.vector_db = self.load_local_db(vector_db_path, self.embeddings)
+        
+        # 使用相同的模型進行查詢編碼
+        self.model = SentenceTransformer(self.model_name)
+
+    def load_index(self, idx_path=None, model_name:str=None):
         try:
             index = faiss.read_index(idx_path)
             print(f"成功載入FAISS索引，包含 {index.ntotal} 個向量")
@@ -13,7 +34,7 @@ class CustomFAISSRetriever(dspy.Retrieve):
         except Exception as e:
             print(f"索引載入失敗: {str(e)}")
             return None
-        
+
     def load_local_db(self, local_db_path=None, embeddings=None):
         try:
             db = LangchainFAISS.load_local(
@@ -27,26 +48,8 @@ class CustomFAISSRetriever(dspy.Retrieve):
             print(f"向量庫載入異常: {str(e)}")
             return None
             
-    def __init__(self, faiss_index_path, vector_db_path, k=2):
-        super().__init__()
-        self.k = k
-        # 使用同一個模型名稱
-        self.model_name = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
-        
-        # 初始化 embeddings
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=self.model_name
-        )
-        
-        # 載入 FAISS 索引
-        self.index = self.load_index(faiss_index_path)
-        
-        # 載入向量庫
-        # self.vector_db = self.load_local_db(vector_db_path, self.embeddings)
-        
-        # 使用相同的模型進行查詢編碼
-        self.model = SentenceTransformer(self.model_name)
     
+
     def __call__(self, query):
         # 編碼查詢
         query_embedding = self.model.encode(
