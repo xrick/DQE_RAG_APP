@@ -65,7 +65,7 @@ def InitializeLLM_DeepSeekV2():
                 **local_config
             )
         )
-        print("DeepSeek-R1 has initialized!")
+        print("DeepSeek-V2 has initialized!")
 
 def InitializeLLM_DeepSeekR1():
         local_config = {
@@ -79,12 +79,12 @@ def InitializeLLM_DeepSeekR1():
                 **local_config
             )
         )
-        print("DeepSeek-V2 has initialized!")
+        print("DeepSeek-R1 has initialized!")
 
 ###########
 # LLM初始化
 ###########
-InitializeLLM_DeepSeekV2();
+InitializeLLM_DeepSeekR1();
 """
 问题现象描述:{submessages['question']}2
 1.模块:{submessages['module']}0
@@ -151,27 +151,46 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     signature = "question -> answer"
     llmobj = dspy.Predict(signature)
     # 使用 Template 字符串
+    # Rule-6:Please generate the responses using makrdown format
     prompt_template = """
+        Role:You are a sentences refinement expert and good at repolish sentences.
         Rules:
             Rule-1: All the data must not be used for training any deep learning model and llm.
             Rule-2: The responses must be expressed in simple chinese
             Rule-3: Generate the responses in a more readably way.
-            Rule-4:Please refine and repolish the following question and answer sentences based on course_analysis and experience.
-            Rule-5:Please strictly follow the following format to generate the responses.
-            Rule-6:Please generate the responses using makrdown format
         questions:
-            **A.问题现象描述: {question}**.       
-            **B.回答:**.     
-                **1.模块:** {module}.     
-                **2.严重度(A/B/C):** {severity}.     
-                **3.原因分析:** {cause}.     
-                **4.改善对策:** {improve}.     
-                **5.经验萃取:** {experience}.     
-                **6.评审后优化:** {judge}.     
-                **7.评分:** {score}.     
+        Please refine and repolish the following description and answer sentences based on course_analysis and experience.
+        Please strictly follow the following format to generate the responses as markdown sentences.
+        
+        **A.问题现象描述:**.   
+            {description}. 
+        **B.回答:**. 
+            **1.模块:**. 
+                {module}. 
+            **2.严重度(A/B/C):**. 
+                {severity}. 
+            **3.原因分析:**. 
+                {cause}.  
+            **4.改善对策:**. 
+                {improve}. 
+            **5.经验萃取:**. 
+                {experience}. 
+            **6.评审后优化:**. 
+                {judge}. 
+            **7.评分:**. 
+                {score}. 
         """
     # 使用 format 方法安全地插入值
-    promptPatternStr = prompt_template.format(**cleaned_messages)
+    # promptPatternStr = prompt_template.format(**cleaned_messages)
+    promptPatternStr = prompt_template.format(description=cleaned_messages['description'],
+                                              module=cleaned_messages['module'],
+                                              severity=cleaned_messages['severity'],
+                                              cause=cleaned_messages['cause'],
+                                              improve=cleaned_messages['improve'],
+                                              experience=cleaned_messages['experience'],
+                                              judge=cleaned_messages['judge'],
+                                              score=cleaned_messages['score'],
+                                              )
     # 創建預測對象並返回結果
     response = llmobj(question=promptPatternStr)
     return response.answer
@@ -249,7 +268,7 @@ def sanitize_text(text):
 
 def replace_chinese_punctuation(text):
     if pd.isna(text):  # 處理 NaN 值
-        return ""
+        return "N"
     
     # 更新替換對照表
     punctuation_map = {
@@ -284,7 +303,7 @@ def replace_chinese_punctuation(text):
 
 def getSubMessages(df_row):
     return {
-        "question": replace_chinese_punctuation(str(df_row['问题现象描述'])),
+        "description": replace_chinese_punctuation(str(df_row['问题现象描述'])),
         "module": replace_chinese_punctuation(str(df_row['模块'])),
         "severity": replace_chinese_punctuation(str(df_row['严重度'])),
         "cause": replace_chinese_punctuation(str(df_row['原因分析'])),

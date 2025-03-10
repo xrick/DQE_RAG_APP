@@ -148,17 +148,6 @@
 
     // 添加消息到聊天框的輔助函數
     // 配置 marked.js 使用 highlight.js
-    // marked.setOptions({
-    //     highlight: function(code, lang) {
-    //         if (lang && hljs.getLanguage(lang)) {
-    //             return hljs.highlight(code, { language: lang }).value;
-    //         }
-    //         return hljs.highlightAuto(code).value;
-    //     },
-    //     breaks: true,
-    //     gfm: true
-    // });
-
     marked.setOptions({
         highlight: function(code, lang) {
             if (lang && hljs.getLanguage(lang)) {
@@ -166,8 +155,19 @@
             }
             return hljs.highlightAuto(code).value;
         },
-        langPrefix: 'hljs language-'
+        breaks: true,
+        gfm: true
     });
+
+    // marked.setOptions({
+    //     highlight: function(code, lang) {
+    //         if (lang && hljs.getLanguage(lang)) {
+    //             return hljs.highlight(code, { language: lang }).value;
+    //         }
+    //         return hljs.highlightAuto(code).value;
+    //     },
+    //     langPrefix: 'hljs language-'
+    // });
 
     function appendMessage(role, text) {
         const chatContainer = document.getElementById("preview");
