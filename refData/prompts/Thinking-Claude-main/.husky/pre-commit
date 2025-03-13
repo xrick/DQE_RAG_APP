@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+
+# DON'T TOUCH THIS FILE IF YOU DON'T KNOW WHAT YOU ARE DOING
+
+# Check if there are changes in extensions directory
+if ! git diff --cached --name-only | grep "^extensions/chrome" > /dev/null; then
+  echo "No changes in chrome"
+  exit 0
+fi
+
+if ! cd extensions/chrome; then
+  echo "Failed to change directory"
+  exit 1
+fi
+
+if ! bun run lint:staged; then
+  echo "Lint failed"
+  exit 1
+fi
+
+if ! bun run check-version-sync; then
+  echo "Version sync check failed"
+  exit 1
+fi
+
+# TODO: config this for other extensions too

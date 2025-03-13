@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+
+# DON'T TOUCH THIS FILE IF YOU DON'T KNOW WHAT YOU ARE DOING
+
+echo "Checking for changes in chrome..."
+if git log -1 --name-only --pretty=format: | grep "^extensions/chrome" > /dev/null; then
+  echo "Changes detected, fetching..."
+  git fetch
+  echo "Fetch complete"
+  echo "Pulling changes..."
+  git pull
+  echo "Pull complete"
+fi
+
+# TODO: config this for other extensions too
