@@ -152,7 +152,7 @@ def format_context_to_md(context):
         str: 结构化Markdown文档，含自动生成的目录锚点
     """
 
-async def generate(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2", search_action: int = 1) -> str:
+async def generate(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2") -> str:
     # global stackexchange;
     # global googleserper;
     # global SERPER_KEY;
@@ -168,14 +168,7 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     signature = "question -> answer"
     llmobj = dspy.Predict(signature)
     # 使用 Template 字符串
-    if search_action == 1:
-        # 精準搜尋邏輯
-        print("執行精準搜尋...")
-        # 原有的搜尋邏輯
-    else:
-        # 標籤搜尋邏輯
-        print("執行標籤搜尋...")
-        # 實現標籤搜尋的邏輯
+    # Rule-6:Please generate the responses using makrdown format
     prompt_template = """
         Role: You are a sentences refinement expert and good at markdown writer.
         Task: Generate a properly formatted markdown table with the following data:
@@ -359,8 +352,6 @@ async def api_ai_chat(request: Request):
     # try:
         # 從請求中提取用戶消息
         data = await request.json()
-        search_action = data.get("search_action")  # 預設為精準搜尋
-        print(f"---------------search_action:{search_action}--------------");
         _pos, _distances = search_similar_questions(faiss_retriever, data.get("message"))
         max_pos = np.amax(_pos[0]);
         print(max_pos);
@@ -374,8 +365,14 @@ async def api_ai_chat(request: Request):
         message = replace_chinese_punctuation(message);
         # print(message);
         _submessages = getSubMessages(dfObj.iloc[max_pos]);
-        # call generate function
-        ai_response = await generate(message=message, submessages=_submessages, search_action=search_action);
+        # _submessages = replace_chinese_punctuation(str(_submessages));
+
+        # history = data.get("history", [])
+        # if not message:
+        #     raise HTTPException(status_code=400, detail="Message is required")
+        # 調用 AIChatService 的生成方法
+        
+        ai_response = await generate(message=message, submessages=_submessages);
         print(type(ai_response))
         # 返回 AI 的回應
         return {"response": ai_response}; 

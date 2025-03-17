@@ -2,56 +2,7 @@
 (function () {
     console.log("ai-chat.js 加載完成！");
     console.log("it has invoke！");
-
-    // 添加搜尋模式變數和控制邏輯
-    let search_action = 1; // 預設為精準搜尋
     // 定義初始化聊天介面的函數
-
-    function initializeSearchButtons() {
-        const preciseButton = document.getElementById('precise-search');
-        const tagButton = document.getElementById('tag-search');
-        
-        preciseButton.addEventListener('click', () => {
-            search_action = 1;
-            preciseButton.classList.add('active');
-            tagButton.classList.remove('active');
-        });
-        
-        tagButton.addEventListener('click', () => {
-            search_action = 2;
-            tagButton.classList.add('active');
-            preciseButton.classList.remove('active');
-        });
-    }
-
-    // function initializeChatInterface() {
-    //     const maxRetries = 10;
-    //     let retryCount = 0;
-    
-    //     function tryInitialize() {
-    //         console.log("嘗試初始化聊天介面...");
-    //         const chatContainer = document.getElementById("preview");
-    //         const messageInput = document.getElementById("editor");
-    //         const sendButton = document.getElementById("submit");
-            
-    //         if (!chatContainer || !messageInput || !sendButton) {
-    //             if (retryCount < maxRetries) {
-    //                 retryCount++;
-    //                 setTimeout(tryInitialize, 100);
-    //                 return;
-    //             }
-    //             console.error("初始化失敗：無法找到必要元素");
-    //             return;
-    //         }
-            
-    //         // 初始化搜尋按鈕
-    //         initializeSearchButtons();
-            
-    //         // 原有的事件綁定邏輯
-    //     }
-        
-    //     tryInitialize();
-    // }
     function initializeChatInterface() {
         const maxRetries = 10;
         let retryCount = 0;
@@ -76,7 +27,6 @@
                 console.error("初始化失敗：無法找到必要元素");
                 return;
             }
-            initializeSearchButtons();
     
             // 綁定發送按鈕事件
             sendButton.addEventListener("click", function() {
@@ -103,7 +53,7 @@
         tryInitialize();
     }
     
-    
+
     // 將函數掛載到全局作用域
     window.initializeChatInterface = initializeChatInterface;
 
@@ -130,10 +80,7 @@
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ 
-                message,
-                search_action // 添加搜尋模式參數
-            }),
+            body: JSON.stringify({ message }),
         })
         .then((response) => {
             if (!response.ok) {
@@ -158,6 +105,22 @@
         });
     }
 
+    // 添加消息到聊天框的輔助函數
+    // 配置 marked.js 使用 highlight.js
+    // for markdown table
+    // marked.setOptions({
+    //     highlight: function(code, lang) {
+    //         if (lang && hljs.getLanguage(lang)) {
+    //             return hljs.highlight(code, { language: lang }).value;
+    //         }
+    //         return hljs.highlightAuto(code).value;
+    //     },
+    //     breaks: true,
+    //     gfm: true,
+    //     tables: true,  // 啟用表格支持
+    //     pedantic: false,
+    //     sanitize: false
+    // });
 
     marked.setOptions({
         gfm: true,
@@ -177,19 +140,18 @@
             console.error("找不到聊天容器！");
             return;
         }
+    
         const messageWrapper = document.createElement("div");
-        
         messageWrapper.className = "w-full flex mb-4 " + 
             (role === "user" ? "justify-end" : "justify-start");
     
         const messageDiv = document.createElement("div");
-        messageDiv.className = `message ${role}`;
         messageDiv.className = `max-w-[100%] p-4 rounded-lg ${
             role === "user" 
                 ? "bg-blue-500 text-white ml-auto rounded-br-none" 
                 : "bg-gray-100 text-gray-800 mr-auto rounded-bl-none"
         }`;
-        
+    
         const contentDiv = document.createElement("div");
         contentDiv.className = "markdown-content prose " + 
             (role === "user" ? "prose-invert" : "");
@@ -197,8 +159,7 @@
         try {
             if(act === 'markdown') {
                 // 使用 marked 解析 Markdown
-                const cleanContent = text.trim();
-                contentDiv.innerHTML = marked.parse(cleanContent);
+                contentDiv.innerHTML = marked.parse(text);
             } else {
                 contentDiv.textContent = text;
             }
@@ -206,13 +167,9 @@
             messageDiv.appendChild(contentDiv);
             messageWrapper.appendChild(messageDiv);
             chatContainer.appendChild(messageWrapper);
+            
             // 滾動到底部
             chatContainer.scrollTop = chatContainer.scrollHeight;
-
-            // 重新應用程式碼高亮
-            document.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightBlock(block);
-            });
         } catch (error) {
             console.error("渲染訊息時發生錯誤：", error);
             contentDiv.textContent = text;

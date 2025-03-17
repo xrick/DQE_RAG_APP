@@ -116,6 +116,48 @@ InitializeLLM_DeepSeekR1();
 6.评审后优化:{submessages['judge']}6
 7.评分:{submessages['score']}7
 """
+# async def generate(message:str=None, submessages:dict=None, history: List[Dict[str, str]] = None, model: str = "deepseekv2") -> str:
+#         if message == None:
+#             raise ValueError("query string is none, please input query string.")
+#         # try:
+#             # MainpromptPatternStr = "{question} -> answer"# old
+#         promptPatternStr ="""
+#             context:
+#                 Rule-1: All the data must not be used for training any deep learning model and llm.
+#                 Rule-2: The responses must be expressed in simple chinese
+#                 role: you are a skilled and resourceful Field Application Engineer
+#                 task: please refine question and answer sentences based on course_analysis and experience.
+#                 action:
+#                     A.Generate response from above context in following format:
+#                         问题现象描述: %s
+#                         回答:
+#                             1.模块: %s
+#                             2.严重度(A/B/C): %s
+#                             3.原因分析: %s
+#                             4.改善对策: %s
+#                             5.经验萃取: %s
+#                             6.评审后优化: %s
+#                             7.评分: %s
+#                 goal: generate the responses in a more readably way.
+#             question -> answer
+#             """ % (
+#                 submessages[2],
+#                 submessages[0],
+#                 submessages[1],
+#                 submessages[3],
+#                 submessages[4],
+#                 submessages[5],
+#                 submessages[6],
+#                 submessages[7]
+#             )
+#         # MainpromptPatternStr = MainpromptPatternStr.format(question=promptPatternStr);
+#         llmobj = dspy.Predict(promptPatternStr);
+#         response = llmobj(question=message);
+#         print(f"response: {response.answer}");
+#         return response.answer;
+        # except Exception as e:
+        #      print(e);
+            # raise RuntimeError(f"Error : {e}")
 
 """ stackexchange return messages clean and format"""
 def clean_text(text):
@@ -152,7 +194,7 @@ def format_context_to_md(context):
         str: 结构化Markdown文档，含自动生成的目录锚点
     """
 
-async def generate(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2", search_action: int = 1) -> str:
+async def generate(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2") -> str:
     # global stackexchange;
     # global googleserper;
     # global SERPER_KEY;
@@ -168,28 +210,37 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     signature = "question -> answer"
     llmobj = dspy.Predict(signature)
     # 使用 Template 字符串
-    if search_action == 1:
-        # 精準搜尋邏輯
-        print("執行精準搜尋...")
-        # 原有的搜尋邏輯
-    else:
-        # 標籤搜尋邏輯
-        print("執行標籤搜尋...")
-        # 實現標籤搜尋的邏輯
+    # Rule-6:Please generate the responses using makrdown format
     prompt_template = """
-        Role: You are a sentences refinement expert and good at markdown writer.
-        Task: Generate a properly formatted markdown table with the following data:
-
-        | 问题现象描述 | 模块 | 严重度(A/B/C) | 原因分析 | 改善对策 | 经验萃取 | 评审后优化 | 评分 |
-        |------------|------|-------------|---------|---------|---------|-----------|------|
-        | {description} | {module} | {severity} | {cause} | {improve} | {experience} | {judge} | {score} |
-
-        Requirements:
-        1. Keep the exact table header format as shown above
-        2. Ensure proper cell alignment
-        3. Use <br> for line breaks within cells
-        4. Maintain consistent spacing
-        5. Do not add any extra characters or spaces that might break the table format
+        Role:You are a sentences refinement expert and good at markdown writer.
+        Rules:
+            Rule-1: All the data must not be used for training any deep learning model and llm.
+            Rule-2: The responses must be expressed in simple chinese
+            Rule-3: Generate the responses in a more readably way.
+        Task:
+        1. Please refine and repolish the following description and answer sentences based on course_analysis and experience.
+        2. Please use the following data to generate a markdown table to display these data.
+        3. Please use the following data to generate a well-formatted markdown table:
+            column1 head title : 问题现象描述:   
+            column1 value: {description}
+            column2 head title: 模块 
+            column2 value: {module}
+            column3 head title: 严重度(A/B/C)
+            column3 value: {severity}
+            column4 head title:原因分析 
+            column4 value:{cause}
+            column5 head title:改善对策
+            column5 value:{improve}
+            column6 head title:经验萃取
+            column6 value:{experience}
+            column7 head title:评审后优化
+            column7 value:{judge}
+            column8 head title:评分
+            column1 value:{score}
+        4. the data table is all solid line.
+        5. each column name is all center and middle alignment.
+        6. each column value is all left and middle alignment.
+        7. the table's font-size is 12
         """
     # 使用 format 方法安全地插入值
     # promptPatternStr = prompt_template.format(**cleaned_messages)
@@ -291,19 +342,33 @@ async def get_chat_content():
         return HTMLResponse(content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load chat content: {str(e)}")
+    
 
 def sanitize_text(text):
     if pd.isna(text):
         return ""
+    
+    # 基本清理
     text = str(text).strip()
-    # 保留必要的符號
-    special_chars = ['|', '-', ':', '<br>']
-    for char in special_chars:
-        text = text.replace(f' {char} ', char)
-    # 移除多餘的空格
-    text = ' '.join(text.split())
+    
+    # 移除換行符
+    text = text.replace('\n', ' ').replace('\r', ' ')
+    
+    # 替換中文標點
+    punctuation_map = {
+        '，': ',', '。': '.', '：': ':', '；': ';',
+        '"': '"', '"': '"', ''': "'", ''': "'",
+        '！': '!', '？': '?', '（': '(', '）': ')',
+        '【': '[', '】': ']', '、': ',', '「': '"',
+        '」': '"', '『': "'", '』': "'"
+    }
+    for ch, en in punctuation_map.items():
+        text = text.replace(ch, en)
+    
+    # 轉義引號和其他特殊字符
+    text = text.replace('"', '\\"').replace("'", "\\'")
+    
     return text
-
 
 
 def replace_chinese_punctuation(text):
@@ -359,8 +424,6 @@ async def api_ai_chat(request: Request):
     # try:
         # 從請求中提取用戶消息
         data = await request.json()
-        search_action = data.get("search_action")  # 預設為精準搜尋
-        print(f"---------------search_action:{search_action}--------------");
         _pos, _distances = search_similar_questions(faiss_retriever, data.get("message"))
         max_pos = np.amax(_pos[0]);
         print(max_pos);
@@ -374,8 +437,14 @@ async def api_ai_chat(request: Request):
         message = replace_chinese_punctuation(message);
         # print(message);
         _submessages = getSubMessages(dfObj.iloc[max_pos]);
-        # call generate function
-        ai_response = await generate(message=message, submessages=_submessages, search_action=search_action);
+        # _submessages = replace_chinese_punctuation(str(_submessages));
+
+        # history = data.get("history", [])
+        # if not message:
+        #     raise HTTPException(status_code=400, detail="Message is required")
+        # 調用 AIChatService 的生成方法
+        
+        ai_response = await generate(message=message, submessages=_submessages);
         print(type(ai_response))
         # 返回 AI 的回應
         return {"response": ai_response}; 
