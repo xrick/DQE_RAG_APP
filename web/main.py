@@ -15,6 +15,10 @@ import pandas as pd
 import logging
 import numpy as np
 from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
+from langchain_ollama.llms import OllamaLLM
+from langchain_community.utilities import StackExchangeAPIWrapper
+import re
+import html
 import json 
 ###setup debug
 logging.basicConfig(
@@ -41,6 +45,11 @@ templates = Jinja2Templates(directory="templates")
 # 設置靜態文件目錄
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+LLM_MODEL='phi4:latest';
+
+llm=None;
+
+stackexchange = StackExchangeAPIWrapper(result_separator='\n\n')
 
 # 加載環境變數
 load_dotenv()
@@ -80,6 +89,15 @@ def InitializeLLM_DeepSeekR1():
             )
         )
         print("DeepSeek-R1 has initialized!")
+
+def InitializeLLM_Phi4():
+    global llm;
+    if llm == None:
+        OllamaLLM(model=LLM_MODEL)
+    else:
+        print("llm has initialized........");
+        return;
+
 
 ###########
 # LLM初始化
@@ -137,7 +155,33 @@ InitializeLLM_DeepSeekR1();
         # except Exception as e:
         #      print(e);
             # raise RuntimeError(f"Error : {e}")
+
+""" stackexchange return messages clean and format"""
+def clean_text(text):
+    #    移除所有 HTML 標籤（包括 span class="highlight"）
+        text = re.sub(r'<[^>]+>', '', text)
+        # 解碼 HTML 特殊符號
+        text = html.unescape(text)
+        return text.strip()
+
+def format_qa_content(content:str=None):  
+    # 分割問題塊
+    questions = content.split('\n\n')
+    questions = [q.strip() for q in questions if q.strip()]
+    formatted_content = []
+    for q in questions:
+        # print(f"length of q is {len(q)}")
+        question_end = q.find('\n')
+        if question_end != -1:
+            title = q[:question_end+1].strip()
+            content = clean_text(q[question_end:].strip())
+            formatted_q = f"{title}\nAnswer:\n{content}"
+            formatted_content.append(formatted_q)
+    final_content = "\n\n".join(formatted_content)
+    return final_content
+
 async def generate(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2") -> str:
+    global stackexchange;
     if message is None:
         raise ValueError("query string is none, please input query string.")
     
@@ -192,8 +236,31 @@ async def generate(message: str = None, submessages: dict = None, history: List[
                                               score=cleaned_messages['score'],
                                               )
     # 創建預測對象並返回結果
-    response = llmobj(question=promptPatternStr)
-    return response.answer
+    first_lvl_response = llmobj(question=promptPatternStr)
+    responses = []
+    # responses.append(first_lvl_response.answer);
+    
+    """ connect to stackexchange"""
+    raw_ret_msg = stackexchange.run(cleaned_messages['description']);
+    processed_ret_msg = format_qa_content(raw_ret_msg)
+    if(len(processed_ret_msg) > 6):
+        responses.append("StackExchange上類似的問題：\n"+processed_ret_msg);
+    else:
+        responses.append("StackExchange上類似的問題：无");
+    format_response = "\n\n".join(responses)
+    ret_dict = {
+        'primary_msg':first_lvl_response.answer,
+        'outer_tools_msg': format_response,
+        'status_code':200
+    }
+    # return JSONResponse(
+    #         content={
+    #             'primary_msg':first_lvl_response.answer,
+    #             'outer_tools_msg': format_response,
+    #         },
+    #         status_code=200
+    #     )
+    return ret_dict
         
 #     except Exception as e:
 #         raise RuntimeError(f"Error : {str(e)}")

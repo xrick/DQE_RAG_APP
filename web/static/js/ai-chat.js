@@ -135,7 +135,9 @@
         .then((data) => {
             console.log("後端回應：", data);
             if (data && data.response) {
-                appendMessage("ai", data.response);
+                // appendMessage("ai", `${JSON.stringify(data.response)}`);
+                appendMessage("ai:", data.response['primary_msg'])
+                appendMessage("similar questions:", data.response['outer_tools_msg'])
             } else {
                 appendMessage("error", "後端未返回有效回應！");
             }
