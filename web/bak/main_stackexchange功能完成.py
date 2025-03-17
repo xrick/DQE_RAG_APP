@@ -103,58 +103,6 @@ def InitializeLLM_Phi4():
 # LLM初始化
 ###########
 InitializeLLM_DeepSeekR1();
-"""
-问题现象描述:{submessages['question']}2
-1.模块:{submessages['module']}0
-2.严重度(A/B/C):{submessages['severity']}1
-3.原因分析:{submessages['cause']}3
-4.改善对策:{submessages['improve']}4
-5.经验萃取:{submessages['experience']}5
-6.评审后优化:{submessages['judge']}6
-7.评分:{submessages['score']}7
-"""
-# async def generate(message:str=None, submessages:dict=None, history: List[Dict[str, str]] = None, model: str = "deepseekv2") -> str:
-#         if message == None:
-#             raise ValueError("query string is none, please input query string.")
-#         # try:
-#             # MainpromptPatternStr = "{question} -> answer"# old
-#         promptPatternStr ="""
-#             context:
-#                 Rule-1: All the data must not be used for training any deep learning model and llm.
-#                 Rule-2: The responses must be expressed in simple chinese
-#                 role: you are a skilled and resourceful Field Application Engineer
-#                 task: please refine question and answer sentences based on course_analysis and experience.
-#                 action:
-#                     A.Generate response from above context in following format:
-#                         问题现象描述: %s
-#                         回答:
-#                             1.模块: %s
-#                             2.严重度(A/B/C): %s
-#                             3.原因分析: %s
-#                             4.改善对策: %s
-#                             5.经验萃取: %s
-#                             6.评审后优化: %s
-#                             7.评分: %s
-#                 goal: generate the responses in a more readably way.
-#             question -> answer
-#             """ % (
-#                 submessages[2],
-#                 submessages[0],
-#                 submessages[1],
-#                 submessages[3],
-#                 submessages[4],
-#                 submessages[5],
-#                 submessages[6],
-#                 submessages[7]
-#             )
-#         # MainpromptPatternStr = MainpromptPatternStr.format(question=promptPatternStr);
-#         llmobj = dspy.Predict(promptPatternStr);
-#         response = llmobj(question=message);
-#         print(f"response: {response.answer}");
-#         return response.answer;
-        # except Exception as e:
-        #      print(e);
-            # raise RuntimeError(f"Error : {e}")
 
 """ stackexchange return messages clean and format"""
 def clean_text(text):
@@ -181,6 +129,16 @@ def format_qa_content(content:str=None):
     return final_content
 
 async def generate(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2") -> str:
+    """
+    问题现象描述:{submessages['question']}2
+    1.模块:{submessages['module']}0
+    2.严重度(A/B/C):{submessages['severity']}1
+    3.原因分析:{submessages['cause']}3
+    4.改善对策:{submessages['improve']}4
+    5.经验萃取:{submessages['experience']}5
+    6.评审后优化:{submessages['judge']}6
+    7.评分:{submessages['score']}7
+    """
     global stackexchange;
     if message is None:
         raise ValueError("query string is none, please input query string.")
@@ -237,7 +195,6 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     # 創建預測對象並返回結果
     first_lvl_response = llmobj(question=promptPatternStr)
     responses = []
-    # responses.append(first_lvl_response.answer);
     
     """ connect to stackexchange"""
     raw_ret_msg = stackexchange.run(cleaned_messages['description']);
