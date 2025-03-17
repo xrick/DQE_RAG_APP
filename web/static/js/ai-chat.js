@@ -136,8 +136,9 @@
             console.log("後端回應：", data);
             if (data && data.response) {
                 // appendMessage("ai", `${JSON.stringify(data.response)}`);
-                appendMessage("ai:", data.response['primary_msg'])
-                appendMessage("similar questions:", data.response['outer_tools_msg'])
+                appendMessage("ai:", data.response['primary_msg'],'markdown')
+                // appendMessage("similar questions:", data.response['googleserper'],'markdown')
+                appendMessage("similar questions:", data.response['googleserper'],'puretxt')
             } else {
                 appendMessage("error", "後端未返回有效回應！");
             }
@@ -171,7 +172,7 @@
     //     langPrefix: 'hljs language-'
     // });
 
-    function appendMessage(role, text) {
+    function appendMessage(role, text, act) {
         const chatContainer = document.getElementById("preview");
         
         if (!chatContainer) {
@@ -195,7 +196,11 @@
             (role === "user" ? "prose-invert" : "");
         
         // // 使用 marked 解析 Markdown
-        contentDiv.innerHTML = marked.parse(text);
+        if(act=='markdown'){
+            contentDiv.innerHTML = marked.parse(text);
+        }else{
+            contentDiv.innerHTML = text;
+        }
 
         messageDiv.appendChild(contentDiv);
         messageWrapper.appendChild(messageDiv);

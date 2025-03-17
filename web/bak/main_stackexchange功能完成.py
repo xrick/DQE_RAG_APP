@@ -16,10 +16,8 @@ import logging
 import numpy as np
 from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
 from langchain_ollama.llms import OllamaLLM
-from langchain_community.utilities import StackExchangeAPIWrapper
-import re
-import html
-import json 
+# from langchain_community.utilities import StackExchangeAPIWrapper
+c
 ###setup debug
 logging.basicConfig(
     level=logging.INFO,
@@ -46,10 +44,11 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 LLM_MODEL='phi4:latest';
-
 llm=None;
 
-stackexchange = StackExchangeAPIWrapper(result_separator='\n\n')
+# stackexchange = StackExchangeAPIWrapper(result_separator='\n\n')
+googleserper = http.client.HTTPSConnection("google.serper.dev")
+SERPER_KEY = "3026422e86bf19796a06b5f15433e9c0cd9bd88a"
 
 # 加載環境變數
 load_dotenv()
@@ -140,6 +139,8 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     7.评分:{submessages['score']}7
     """
     global stackexchange;
+    global SERPER_KEY;
+    global googleserper;
     if message is None:
         raise ValueError("query string is none, please input query string.")
     # try:
@@ -194,19 +195,44 @@ async def generate(message: str = None, submessages: dict = None, history: List[
                                               )
     # 創建預測對象並返回結果
     first_lvl_response = llmobj(question=promptPatternStr)
-    responses = []
     
     """ connect to stackexchange"""
-    raw_ret_msg = stackexchange.run(cleaned_messages['description']);
-    processed_ret_msg = format_qa_content(raw_ret_msg)
-    if(len(processed_ret_msg) > 6):
-        responses.append("StackExchange上類似的問題：\n"+processed_ret_msg);
-    else:
-        responses.append("StackExchange上類似的問題：无");
-    format_response = "\n\n".join(responses)
+    # responses = []
+    # raw_ret_msg = stackexchange.run(cleaned_messages['description']);
+    # processed_ret_msg = format_qa_content(raw_ret_msg)
+    # if(len(processed_ret_msg) > 6):
+    #     responses.append("StackExchange上類似的問題：\n"+processed_ret_msg);
+    # else:
+    #     responses.append("StackExchange上類似的問題：无");
+    # format_response = "\n\n".join(responses)
+
+    """google serper api"""
+    headers = {
+        'X-API-KEY': SERPER_KEY,
+        'Content-Type': 'application/json'
+    }
+    payload = json.dumps({
+        "q": clean_text['description']
+    })
+    googleserper.request("POST", "/search", payload, headers)
+    res = googleserper.getresponse()
+    gs_data= res.read()
+    # print(data.decode("utf-8"))
+    gs_data = gs_data.decode("utf-8")
+    # data_dict = json.load(data.replace("'", '"'))
+    data_dict = eval(gs_data)
+    gs_content = data_dict["organic"]
+    gs_responses = [];
+    gs_row_count = 1;
+    for c in gs_content:
+        gs_responses.append(f"{gs_row_count}.標題:{c['title']}\n 連結:{c['link']}\n 描述:{c['snippet']}\n");
+
+        
+    """make responses and return"""
     ret_dict = {
         'primary_msg':first_lvl_response.answer,
-        'outer_tools_msg': format_response,
+        # 'stackexchangemsg': format_response,
+        'gooserper': gs_responses,
         'status_code':200
     }
     return ret_dict       
