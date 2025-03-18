@@ -3,10 +3,56 @@
     console.log("ai-chat.js 加載完成！");
     console.log("it has invoke！");
 
-    // 添加搜尋模式變數和控制邏輯
+    // 搜尋模式控制變數
     let search_action = 1; // 預設為精準搜尋
-    // 定義初始化聊天介面的函數
 
+    // 欄位校驗函數 (新增)
+    function validateTableColumns(data) {
+        const requiredColumns = [
+            '模块', '严重度(A/B/C)', '问题现象描述', 
+            '原因分析', '改善对策', '经验萃取',
+            '评审后优化', '评分'
+        ];
+        return data.every(row => 
+            requiredColumns.every(col => col in row)
+        );
+    }
+
+    // 改進版表格渲染邏輯 (修改)
+    function renderMarkdownTable(data) {
+        if (!validateTableColumns(data)) {
+            console.error('欄位結構異常，缺少必要字段');
+            return '```markdown\n[錯誤] 數據格式不符合規範\n```';
+        }
+
+        const processedData = data.map(row => ({
+            模块: row.模块,
+            严重度: row['严重度(A/B/C)'],
+            现象描述: row.问题现象描述.replace(/\n/g, '<br>'),
+            原因分析: row.原因分析,
+            对策: row.改善对策.replace(/\n/g, '<br>'),
+            经验: row.经验萃取,
+            优化: row.评审后优化 || '无',
+            评分: isNaN(row.评分) ? 'No Data' : row.评分
+        }));
+
+        return `
+| 模块 | 严重度(A/B/C) | 问题现象描述 | 原因分析 | 改善对策 | 经验萃取 | 评审后优化 | 评分 |
+|------|:------------:|--------------|---------|---------|---------|-----------|:----:|
+${processedData.map(row => 
+    `| ${row.模块} ` +
+    `| ${row.严重度} ` +
+    `| ${row.现象描述} ` +
+    `| ${row.原因分析} ` +
+    `| ${row.对策} ` +
+    `| ${row.经验} ` +
+    `| ${row.优化} ` +
+    `| ${row.评分} |`
+).join('\n')}
+        `;
+    }
+
+    // 初始化搜尋按鈕 (保留原始邏輯)
     function initializeSearchButtons() {
         const preciseButton = document.getElementById('precise-search');
         const tagButton = document.getElementById('tag-search');
@@ -24,48 +70,17 @@
         });
     }
 
-    // function initializeChatInterface() {
-    //     const maxRetries = 10;
-    //     let retryCount = 0;
-    
-    //     function tryInitialize() {
-    //         console.log("嘗試初始化聊天介面...");
-    //         const chatContainer = document.getElementById("preview");
-    //         const messageInput = document.getElementById("editor");
-    //         const sendButton = document.getElementById("submit");
-            
-    //         if (!chatContainer || !messageInput || !sendButton) {
-    //             if (retryCount < maxRetries) {
-    //                 retryCount++;
-    //                 setTimeout(tryInitialize, 100);
-    //                 return;
-    //             }
-    //             console.error("初始化失敗：無法找到必要元素");
-    //             return;
-    //         }
-            
-    //         // 初始化搜尋按鈕
-    //         initializeSearchButtons();
-            
-    //         // 原有的事件綁定邏輯
-    //     }
-        
-    //     tryInitialize();
-    // }
+    // 初始化聊天介面 (整合校驗邏輯)
     function initializeChatInterface() {
         const maxRetries = 10;
         let retryCount = 0;
     
         function tryInitialize() {
             console.log("嘗試初始化聊天介面...");
-            // const chatContainer = document.getElementById("chat-container");
-            // const messageInput = document.getElementById("message-input");
-            // const sendButton = document.getElementById("send-button");
             const chatContainer = document.getElementById("preview");
             const messageInput = document.getElementById("editor");
             const sendButton = document.getElementById("submit");
             
-
             if (!chatContainer || !messageInput || !sendButton) {
                 if (retryCount < maxRetries) {
                     retryCount++;
@@ -78,7 +93,7 @@
             }
             initializeSearchButtons();
     
-            // 綁定發送按鈕事件
+            // 事件綁定 (保留原始邏輯)
             sendButton.addEventListener("click", function() {
                 const message = messageInput.value.trim();
                 if (message) {
@@ -86,7 +101,6 @@
                 }
             });
     
-            // 綁定輸入框事件
             messageInput.addEventListener("keydown", function(event) {
                 if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
@@ -102,12 +116,8 @@
     
         tryInitialize();
     }
-    
-    
-    // 將函數掛載到全局作用域
-    window.initializeChatInterface = initializeChatInterface;
 
-    // 發送消息的輔助函數
+    // 發送消息函數 (整合數據處理)
     function sendMessage(message) {
         const chatContainer = document.getElementById("preview");
         const messageInput = document.getElementById("editor");
@@ -117,14 +127,10 @@
             return;
         }
 
-        // 顯示用戶消息到聊天框
         appendMessage("user", message);
 
-        // 清空輸入框
         messageInput.value = "";
 
-        // 模擬向後端發送請求
-        console.log("正在向後端發送請求...");
         fetch("/api/ai-chat", {
             method: "POST",
             headers: {
@@ -132,22 +138,18 @@
             },
             body: JSON.stringify({ 
                 message,
-                search_action // 添加搜尋模式參數
+                search_action
             }),
         })
         .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return response.json();
         })
         .then((data) => {
-            console.log("後端回應：", data);
-            if (data && data.response) {
-                // appendMessage("ai", `${JSON.stringify(data.response)}`);
-                appendMessage("ai:", data.response['primary_msg'],'markdown')
-                // appendMessage("similar questions:", data.response['googleserper'],'markdown')
-                // appendMessage("similar questions:", data.response['googleserper'],'puretxt')
+            if (data?.response) {
+                // 新增表格渲染調用
+                const tableMarkdown = renderMarkdownTable(data.response.data || []);
+                appendMessage("ai", tableMarkdown, 'markdown');
             } else {
                 appendMessage("error", "後端未返回有效回應！");
             }
@@ -158,7 +160,7 @@
         });
     }
 
-
+    // Markdown 解析配置 (保留原始設定)
     marked.setOptions({
         gfm: true,
         breaks: true,
@@ -167,25 +169,21 @@
         sanitize: false,
         smartLists: true,
         smartypants: false,
-        xhtml: false,
-        headerIds: false,
-        mangle: false
+        xhtml: false
     });
 
+    // 消息渲染函數 (優化錯誤處理)
     function appendMessage(role, text, act) {
         const chatContainer = document.getElementById("preview");
-        
         if (!chatContainer) {
             console.error("找不到聊天容器！");
             return;
         }
+
         const messageWrapper = document.createElement("div");
-        
-        messageWrapper.className = "w-full flex mb-4 " + 
-            (role === "user" ? "justify-end" : "justify-start");
+        messageWrapper.className = `w-full flex mb-4 ${role === "user" ? "justify-end" : "justify-start"}`;
     
         const messageDiv = document.createElement("div");
-        // messageDiv.className = `message ${role}`;
         messageDiv.className = `max-w-[100%] p-4 rounded-lg ${
             role === "user" 
                 ? "bg-blue-500 text-white ml-auto rounded-br-none" 
@@ -193,34 +191,35 @@
         }`;
         
         const contentDiv = document.createElement("div");
-        contentDiv.className = `markdown-content prose  $(role === "user" ? "prose-invert" : "")`;
-        
+        contentDiv.className = `markdown-content prose ${role === "user" ? "prose-invert" : ""}`;
+
         try {
             if(act === 'markdown') {
-                // 使用 marked 解析 Markdown
-                // const cleanContent = text.trim();
-                const cleanContent = text.trim()
-                .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
-                .replace(/\|{2,}/g, '|');   // Fix multiple pipe characters
-                contentDiv.innerHTML = marked.parse(cleanContent);
+                contentDiv.innerHTML = marked.parse(text.trim());
             } else {
                 contentDiv.textContent = text;
             }
-            
             messageDiv.appendChild(contentDiv);
             messageWrapper.appendChild(messageDiv);
             chatContainer.appendChild(messageWrapper);
-            // 滾動到底部
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // 重新應用程式碼高亮
-            // document.querySelectorAll('pre code').forEach((block) => {
-            //     hljs.highlightBlock(block);
-            // });
+            // 代碼高亮
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+            });
         } catch (error) {
             console.error("渲染訊息時發生錯誤：", error);
             contentDiv.textContent = text;
         }
     }
 
+    // 全局暴露初始化函數
+    window.initializeChatInterface = initializeChatInterface;
+
+    // 延遲初始化
+    setTimeout(() => {
+        initializeChatInterface();
+        initializeSearchButtons();
+    }, 500);
 })();

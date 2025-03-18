@@ -21,7 +21,8 @@ class CustomFAISSRetriever(dspy.Retrieve):
         self.index = self.load_index(faiss_index_path)
         
         # 載入向量庫
-        self.vector_db = self.load_local_db(vector_db_path, self.embeddings)
+        if vector_db_path != "nodata":
+            self.vector_db = self.load_local_db(vector_db_path, self.embeddings)
         
         # 使用相同的模型進行查詢編碼
         self.model = SentenceTransformer(self.model_name)
@@ -37,6 +38,8 @@ class CustomFAISSRetriever(dspy.Retrieve):
 
     def load_local_db(self, local_db_path=None, embeddings=None):
         # try:
+        if local_db_path=="nodata":
+            return "nodata";
         db = LangchainFAISS.load_local(
             folder_path=local_db_path,
             embeddings=embeddings,
@@ -47,8 +50,6 @@ class CustomFAISSRetriever(dspy.Retrieve):
         # except Exception as e:
         #     print(f"向量庫載入異常: {str(e)}")
         #     return None
-            
-    
 
     def __call__(self, query):
         # 編碼查詢
@@ -60,7 +61,6 @@ class CustomFAISSRetriever(dspy.Retrieve):
         query_embedding = query_embedding.reshape(-1,1).T
         # query_embedding = query_embedding.cpu().numpy()
         query_embedding = query_embedding.astype(np.float32)
-        
         # 搜索向量庫
         # docs = self.vector_db.similarity_search_with_score(query_embedding, k=self.k)
         distance,pos = self.index.search(query_embedding, k=self.k)

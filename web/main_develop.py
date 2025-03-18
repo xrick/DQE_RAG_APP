@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.ai_chat_service import AIChatService
+# from app.ai_chat_service import AIChatService
 from dotenv import load_dotenv
 import pandas as pd
 # from openai import AsyncOpenAI
@@ -17,10 +17,13 @@ import numpy as np
 from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
 from langchain_ollama.llms import OllamaLLM
 # from langchain_community.utilities import StackExchangeAPIWrapper
+# import http.client
 import re
 import html
 import json
-# import http.client
+from pytablewriter import MarkdownTableWriter
+from pytablewriter.style import Style
+
 ###setup debug
 logging.basicConfig(
     level=logging.INFO,
@@ -45,9 +48,7 @@ app.add_middleware(
 templates = Jinja2Templates(directory="templates")
 # 設置靜態文件目錄
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
 LLM_MODEL='phi4:latest';
-
 llm=None;
 
 # stackexchange = StackExchangeAPIWrapper(result_separator='\n\n')
@@ -58,32 +59,17 @@ llm=None;
 load_dotenv()
 encoding_model_name = os.getenv("SENTENCE_MODEL")
 faiss_index_path = os.getenv("FAISS_INDEX_PATH")
-vector_db_path = "nodata"#os.getenv("FAISS_DB_PATH")
+faiss_index_path_qsr = os.getenv("FAISS_INDEX_QUESRC_INDEX");
+faiss_index_path_module = os.getenv("FAISS_INDEX_MODULE_INDEX");
+datasrc_deqlearn = os.getenv("DATASRC_DEQ_LEARN");
+datasrc_deqaitrial = os.getenv("DATASRC_DEQ_AITRIAL");
+
+# vector_db_path = os.getenv("FAISS_DB_PATH")
 logging.info(f"Encoding model: {encoding_model_name}");
 logging.info(f"FAISS index path: {faiss_index_path}");
-logging.info(f"Vector DB path: {vector_db_path}");
+# logging.info(f"Vector DB path: {vector_db_path}");
 
 ################## LLM Initialization ##################
-
-# def InitializeLLM_DeepSeekV2():
-#         local_config = {
-#             "api_base": "http://localhost:11434/v1",  # 注意需加/v1路徑
-#             "api_key": "NULL",  # 特殊標記用於跳過驗證
-#             "model": "deepseek-v2",
-#             "custom_llm_provider":"deepseek"
-#         }
-#         dspy.configure(
-#             lm=dspy.LM(
-#                 **local_config
-#             )web/main.py"deepseek-r1:7b",
-#             "custom_llm_provider":"deepseek"
-#         }
-#         dspy.configure(
-#             lm=dspy.LM(
-#                 **local_config
-#             )
-#         )
-#         print("DeepSeek-R1 has initialized!")
 
 def InitializeLLM_DeepSeekR1():
         local_config = {
@@ -98,6 +84,7 @@ def InitializeLLM_DeepSeekR1():
             )
         )
         print("DeepSeek-R1 has initialized!")
+
 def InitializeLLM_Phi4():
     global llm;
     if llm == None:
@@ -112,14 +99,14 @@ def InitializeLLM_Phi4():
 ###########
 InitializeLLM_DeepSeekR1();
 """
+问题现象描述:{submessages['question']}2
 1.模块:{submessages['module']}0
 2.严重度(A/B/C):{submessages['severity']}1
-3.问题现象描述:{submessages['question']}2
-4.原因分析:{submessages['cause']}3
-5.改善对策:{submessages['improve']}4
-6.经验萃取:{submessages['experience']}5
-7.评审后优化:{submessages['judge']}6
-8.评分:{submessages['score']}7
+3.原因分析:{submessages['cause']}3
+4.改善对策:{submessages['improve']}4
+5.经验萃取:{submessages['experience']}5
+6.评审后优化:{submessages['judge']}6
+7.评分:{submessages['score']}7
 """
 
 """ stackexchange return messages clean and format"""
@@ -157,10 +144,109 @@ def format_context_to_md(context):
         str: 结构化Markdown文档，含自动生成的目录锚点
     """
 
+def gen_data_src_list(dict_data=None):
+    row_list = [v for v in dict_data.values]
+    return row_list
+    # for _, v in dict_data.items:
+        # row_list = [v for v in dict_data.values]
+
+def sanitize_text(text):
+    if pd.isna(text):
+        return ""
+    text = str(text).strip()
+    # 保留必要的符號
+    special_chars = ['|', '-', ':', '<br>']
+    for char in special_chars:
+        text = text.replace(f' {char} ', char)
+    # 移除多餘的空格
+    text = ' '.join(text.split())
+    return text
+
+# def sanitize_text(text):
+#     if pd.isna(text):
+#         return ""
+#     text = str(text).strip()
+    
+#     # Escape special characters that could break markdown tables
+#     escape_chars = {
+#         '|': '\\|',
+#         '\n': '<br>',
+#         '\r': '',
+#         '_': '\\_',
+#         '*': '\\*'
+#     }
+#     for char, replacement in escape_chars.items():
+#         text = text.replace(char, replacement)
+#     # Remove multiple spaces
+#     text = ' '.join(text.split())
+#     return text
+
+def generate_markdown_table(headers, value_matrix):
+    writer = MarkdownTableWriter(
+        tablename="回覆表格",
+        headers=headers,
+        value_matrix=value_matrix,
+        column_alignments=["left"] * len(headers),  # Explicit alignment
+        margin=1  # Add margin for better readability
+    )
+    
+    # Add table style
+    writer.style = Style(
+        align_header="center",
+        border_chars={
+            "left": "|",
+            "right": "|",
+            "header": "-",
+            "center": "|",
+        }
+    )
+    return writer.dumps()
+
+"""======================Generation of Single-Rows======================"""
 async def generate(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2", search_action: int = 1) -> str:
     # global stackexchange;
     # global googleserper;
     # global SERPER_KEY;
+    # 精準搜尋邏輯
+    print("................執行精準搜尋................")
+    if message is None:
+        raise ValueError("query string is none, please input query string.")
+    # try:
+    # 清理所有輸入數據
+    cleaned_messages = {
+        k: sanitize_text(v) for k, v in submessages.items()
+    }
+    print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n")
+
+    headers=["模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
+    value_matrix = [
+        [v for v in cleaned_messages.values()]
+    ]
+    print(value_matrix[0])
+   
+    ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
+    print(f"ret_md_table:\n{ret_md_table}");
+
+    """make responses and return"""
+    ret_dict = {
+        'primary_msg':ret_md_table,
+        # 'stackexchangemsg': format_response,
+        # 'googleserper': gs_responses,
+        'status_code':200
+    }
+    return ret_dict       
+
+
+    
+#     except Exception as e:
+#         raise RuntimeError(f"Error : {str(e)}")
+
+"""======================Generation of Multi-Rows======================"""
+async def generate_multirows(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2", search_action: int = 1) -> str:
+    # global stackexchange;
+    # global googleserper;
+    # global SERPER_KEY;
+    print("執行標籤搜尋...")
     if message is None:
         raise ValueError("query string is none, please input query string.")
     # try:
@@ -173,44 +259,50 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     signature = "question -> answer"
     llmobj = dspy.Predict(signature)
     # 使用 Template 字符串
-    if search_action == 1:
-        # 精準搜尋邏輯
-        print("執行精準搜尋...")
-        # 原有的搜尋邏輯
-    else:
-        # 標籤搜尋邏輯
-        print("執行標籤搜尋...")
+    
         # 實現標籤搜尋的邏輯
-    prompt_template = """
-        Role: You are a sentences refinement expert and good at markdown writer.
-        Task: Generate a properly formatted markdown table with the following data:
+    # prompt_template = """
+    #     Role: 您是一個表格生成專家，擅長將結構化數據轉換為規範的Markdown表格
+    #     Task: 根據提供的數據生成多行Markdown表格，需滿足以下格式要求：
 
-        |模块 | 严重度(A/B/C) | 问题现象描述  | 原因分析 | 改善对策 | 经验萃取 | 评审后优化 | 评分 |
-        |------------|:------:|-------------|---------|---------|---------|-----------|:----:|
-        | {module} | {severity} | {description} | {cause} | {improve} | {experience} | {judge} | {score} |
+    #     | 模組 | 嚴重度 | 問題現象描述 | 原因分析 | 改善對策 | 經驗萃取 | 評審後優化 | 評分 |
+    #     |------|:------:|--------------|---------|----------|----------|------------|:----:|
+    #     {% for item in items %}
+    #     | {{ item.module }} | {{ item.severity }} | {{ item.description }} | {{ item.cause }} | {{ item.improve }} | {{ item.experience }} | {{ item.judge }} | {{ item.score }} |
+    #     {% endfor %}
 
-        Requirements:
-        1. Keep the exact table header format as shown above
-        2. Ensure proper cell alignment
-        3. Use <br> for line breaks within cells
-        4. Maintain consistent spacing
-        5. Do not add any extra characters or spaces that might break the table format
-        7. Check the 8th column value, if not number then use "No Data" as column value.
-        """
-    # 使用 format 方法安全地插入值
+    #     嚴格要求：
+    #     1. 必須包含完整的表頭，且順序不可變更
+    #     2. 每行數據需嚴格對應表頭欄位
+    #     3. 若數值為空則填入「暫無數據」
+    #     4. 使用<br>符號處理欄位內的換行
+    #     5. 評分欄位必須是1-5的整數，若無則標示「待評分」
+    #     6. 嚴格保持表格對齊格式
+    #     7. 根據以下JSON數據生成{{ row_count }}行：
+    #     {{ data_sample }}
+    #     """
+    # sample_data = {
+    #     "items": [{
+    #         "module": cleaned_messages['module'],
+    #         "severity": cleaned_messages['severity'],
+    #         "description": cleaned_messages['description'],
+    #         "cause": cleaned_messages['cause'],
+    #         "improve": cleaned_messages['improve'],
+    #         "experience": cleaned_messages['experience'],
+    #         "judge": cleaned_messages['judge'],
+    #         "score": cleaned_messages['score'] or "待評分"
+    #     }]
+    # }
     # promptPatternStr = prompt_template.format(**cleaned_messages)
-    promptPatternStr = prompt_template.format(description=cleaned_messages['description'],
-                                              module=cleaned_messages['module'],
-                                              severity=cleaned_messages['severity'],
-                                              cause=cleaned_messages['cause'],
-                                              improve=cleaned_messages['improve'],
-                                              experience=cleaned_messages['experience'],
-                                              judge=cleaned_messages['judge'],
-                                              score=cleaned_messages['score'],
-                                              )
-    print(f"*******************\n{promptPatternStr}\n***********************");
+    # 
+    # promptPatternStr = prompt_template.format(
+    #     row_count=len(sample_data['items']),
+    #     data_sample=json.dumps(sample_data, ensure_ascii=False),
+    #     **{k: v or "暫無數據" for k, v in cleaned_messages.items()}
+    # )
+    # print(f"*******************\n{promptPatternStr}\n***********************");
     # 創建預測對象並返回結果
-    first_lvl_response = llmobj(question=promptPatternStr)
+    # first_lvl_response = llmobj(question=promptPatternStr)
     
     # responses.append(first_lvl_response.answer);
     
@@ -249,7 +341,7 @@ async def generate(message: str = None, submessages: dict = None, history: List[
 
     """make responses and return"""
     ret_dict = {
-        'primary_msg':first_lvl_response.answer,
+        'primary_msg':"",#first_lvl_response.answer,
         # 'stackexchangemsg': format_response,
         # 'googleserper': gs_responses,
         'status_code':200
@@ -257,7 +349,6 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     return ret_dict       
 #     except Exception as e:
 #         raise RuntimeError(f"Error : {str(e)}")
-
 
 
 def search_similar_questions(retriever, question):
@@ -268,16 +359,30 @@ def search_similar_questions(retriever, question):
 @app.on_event("startup")
 async def startup_event():
     # global ai_chat_service
-    global faiss_retriever
+    global faiss_retriever;
+    global faiss_retriever_qsrc;
+    global faiss_retriever_module;
     global dfObj;
+    global dfObj_aitrial;
     try:
         logging.info("start to initialize services.......");
         # ai_chat_service = AIChatService(); # 初始化 KB聊天物件
-        print(f"vector db path: {vector_db_path}");
-        faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path=vector_db_path, model_name=encoding_model_name); # 初始化 faiss 檢索物件
-        dfObj = pd.read_csv('./db/raw/deq_learn_refine2_correct.csv', encoding='utf-8-sig'); # 初始化 faiss 檢索物件
+        # print(f"vector db path: {vector_db_path}");
+        faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path="nodata", model_name=encoding_model_name, k=1); # 初始化 faiss 檢索物件
+        print("faiss_retriever initializing succeed........");
+        faiss_retriever_qsrc = CustomFAISSRetriever(faiss_index_path=faiss_index_path_qsr,
+                                                    vector_db_path="nodata",model_name=encoding_model_name,k=4);
+        print("faiss_retriever_qsrc initializing succeed........");
+        faiss_retriever_module = CustomFAISSRetriever(faiss_index_path=faiss_index_path_module,
+                                                    vector_db_path="nodata",model_name=encoding_model_name,k=4);
+        print("faiss_retriever_module initializing succeed........");
+        dfObj = pd.read_csv(datasrc_deqlearn, encoding='utf-8-sig'); # 初始化 faiss 檢索物件
+        print("dfObj initializing succeed........");
+        dfObj_aitrial = pd.read_csv(datasrc_deqaitrial, encoding='utf-8-sig');
+        print("dfObj_aitrial initializing succeed........");
+
         # 初始化助手服務管理器
-        # logging.info("chat, essay-advisor, k9-helper services are initialized!");
+        logging.info("chat, essay-advisor, k9-helper services are initialized!");
     except Exception as e:
         logging.error(f"Failed to run in startup_event: {e}");
         raise RuntimeError(f"Failed to initialize AIChatService: {e}")
@@ -298,44 +403,11 @@ async def get_chat_content():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load chat content: {str(e)}")
 
-def sanitize_text(text):
-    if pd.isna(text):
-        return ""
-    text = str(text).strip()
-    # 保留必要的符號
-    special_chars = ['|', '-', ':', '<br>']
-    for char in special_chars:
-        text = text.replace(f' {char} ', char)
-    # 移除多餘的空格
-    text = ' '.join(text.split())
-    return text
-
-def sanitize_text_2(text):
-    if pd.isna(text):
-        return ""
-    # 基本清理
-    text = str(text).strip()
-    # 移除換行符
-    text = text.replace('\n', ' ').replace('\r', ' ')
-    # 替換中文標點
-    punctuation_map = {
-        '，': ',', '。': '.', '：': ':', '；': ';',
-        '"': '"', '"': '"', ''': "'", ''': "'",
-        '！': '!', '？': '?', '（': '(', '）': ')',
-        '【': '[', '】': ']', '、': ',', '「': '"',
-        '」': '"', '『': "'", '』': "'"
-    }
-    for ch, en in punctuation_map.items():
-        text = text.replace(ch, en)
-    # 轉義引號和其他特殊字符
-    text = text.replace('"', '\\"').replace("'", "\\'")
-    return text
 
 
 def replace_chinese_punctuation(text):
     if pd.isna(text):  # 處理 NaN 值
         return "N"
-    
     # 更新替換對照表
     punctuation_map = {
         '，': ',',
@@ -356,7 +428,8 @@ def replace_chinese_punctuation(text):
         '「': '"',
         '」': '"',
         '『': "'",
-        '』': "'"
+        '』': "'",
+        '\n':"<br>"
     }
     
     # 進行替換
@@ -384,26 +457,58 @@ def getSubMessages(df_row):
 async def api_ai_chat(request: Request):
     # try:
         # 從請求中提取用戶消息
+        # _pos=None;
+        # _distances=None;
+        submessages=None;
         data = await request.json()
         search_action = data.get("search_action")  # 預設為精準搜尋
         print(f"---------------search_action:{search_action}--------------");
-        _pos, _distances = search_similar_questions(faiss_retriever, data.get("message"))
-        max_pos = np.amax(_pos[0]);
-        print(max_pos);
-        # for i in _pos[0]:
-        # if _distances[0][0] > 0.5:
-        #     ai_response = "您好，无法找到相似问题，请重新输入。"
-        #     return {"response": ai_response};
-        # # for i in _pos[0]:
-        # if _distances[0][0] < 0.5:
-        message = data.get("message")
-        message = replace_chinese_punctuation(message);
-        # print(message);
-        _submessages = getSubMessages(dfObj.iloc[max_pos]);
-        print(f"type of _submessages is {type(_submessages)}")
+        message = data.get("message");
+        if search_action == 1:
+            _pos, _distances = search_similar_questions(faiss_retriever, message);
+            print(f"_pos:{_pos}\n_distances:{_distances}");
+            max_pos = np.amax(_pos[0]);
+            min_distance = np.amin(_distances[0]);
+            min_distance = np.argmin(_distances[0]);
+            print(f"most min distance:{min_distance}")
+            
+            if min_distance < 0.5:
+                message = replace_chinese_punctuation(message);
+                submessages = getSubMessages(dfObj.iloc[max_pos])
+            else:
+                #"没有任何匹配的资料"
+                submessages="nodata";
+        else:
+            _pos_qsrc, _distances_qsrc = search_similar_questions(faiss_retriever_qsrc, message);
+            _pos_module, _distance_module =  search_similar_questions(faiss_retriever_module,message);
+            filtered_pos_qsrc = [];
+            for i in range(len(_distances_qsrc[0])):
+                _d = _distances_qsrc[0][i];
+                if _d < 0.5:
+                    filtered_pos_qsrc.append(_pos_qsrc[i])
+            filtered_pos_module=[]
+            for j in range(len(_distance_module[0])):
+                _d = _distance_module[0][j]
+                if _d < 0.5:
+                    filtered_pos_module.append(_pos_module[j])
+            message = replace_chinese_punctuation(message);
+            submessages = []
+            if len(filtered_pos_qsrc) > 0:
+                for item in filtered_pos_qsrc:
+                    submessages.append(getSubMessages(dfObj_aitrial.iloc[item]));
+            if len(filtered_pos_module) > 0:
+                for item in filtered_pos_module:
+                    submessages.append(getSubMessages(dfObj_aitrial.iloc[item]));
+            print(f"search action:{search_action}, and len of submessages:{len(submessages)}");
+            if len(submessages) < 1:
+                submessages.append("nodata");
+        
         # call generate function
-        ai_response = await generate(message=message, submessages=_submessages, search_action=search_action);
-        print(type(ai_response))
+        ai_response = None;
+        if search_action == 1:
+            ai_response = await generate(message=message, submessages=submessages, search_action=search_action);
+        else:
+            ai_response = await generate_multirows(message=message, submessages=submessages, search_action=search_action)
         # 返回 AI 的回應
         return {"response": ai_response}; 
     # except Exception as e:

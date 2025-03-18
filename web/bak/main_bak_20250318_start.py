@@ -58,38 +58,24 @@ llm=None;
 load_dotenv()
 encoding_model_name = os.getenv("SENTENCE_MODEL")
 faiss_index_path = os.getenv("FAISS_INDEX_PATH")
-vector_db_path = "nodata"#os.getenv("FAISS_DB_PATH")
+vector_db_path = os.getenv("FAISS_DB_PATH")
 logging.info(f"Encoding model: {encoding_model_name}");
 logging.info(f"FAISS index path: {faiss_index_path}");
 logging.info(f"Vector DB path: {vector_db_path}");
 
 ################## LLM Initialization ##################
 
-# def InitializeLLM_DeepSeekV2():
-#         local_config = {
-#             "api_base": "http://localhost:11434/v1",  # 注意需加/v1路徑
-#             "api_key": "NULL",  # 特殊標記用於跳過驗證
-#             "model": "deepseek-v2",
-#             "custom_llm_provider":"deepseek"
-#         }
-#         dspy.configure(
-#             lm=dspy.LM(
-#                 **local_config
-#             )web/main.py"deepseek-r1:7b",
-#             "custom_llm_provider":"deepseek"
-#         }
-#         dspy.configure(
-#             lm=dspy.LM(
-#                 **local_config
-#             )
-#         )
-#         print("DeepSeek-R1 has initialized!")
-
-def InitializeLLM_DeepSeekR1():
+def InitializeLLM_DeepSeekV2():
         local_config = {
             "api_base": "http://localhost:11434/v1",  # 注意需加/v1路徑
             "api_key": "NULL",  # 特殊標記用於跳過驗證
-            "model": "deepseek-r1:7b",
+            "model": "deepseek-v2",
+            "custom_llm_provider":"deepseek"
+        }
+        dspy.configure(
+            lm=dspy.LM(
+                **local_config
+            )web/main.py"deepseek-r1:7b",
             "custom_llm_provider":"deepseek"
         }
         dspy.configure(
@@ -98,6 +84,7 @@ def InitializeLLM_DeepSeekR1():
             )
         )
         print("DeepSeek-R1 has initialized!")
+
 def InitializeLLM_Phi4():
     global llm;
     if llm == None:
@@ -112,14 +99,14 @@ def InitializeLLM_Phi4():
 ###########
 InitializeLLM_DeepSeekR1();
 """
+问题现象描述:{submessages['question']}2
 1.模块:{submessages['module']}0
 2.严重度(A/B/C):{submessages['severity']}1
-3.问题现象描述:{submessages['question']}2
-4.原因分析:{submessages['cause']}3
-5.改善对策:{submessages['improve']}4
-6.经验萃取:{submessages['experience']}5
-7.评审后优化:{submessages['judge']}6
-8.评分:{submessages['score']}7
+3.原因分析:{submessages['cause']}3
+4.改善对策:{submessages['improve']}4
+5.经验萃取:{submessages['experience']}5
+6.评审后优化:{submessages['judge']}6
+7.评分:{submessages['score']}7
 """
 
 """ stackexchange return messages clean and format"""
@@ -185,9 +172,9 @@ async def generate(message: str = None, submessages: dict = None, history: List[
         Role: You are a sentences refinement expert and good at markdown writer.
         Task: Generate a properly formatted markdown table with the following data:
 
-        |模块 | 严重度(A/B/C) | 问题现象描述  | 原因分析 | 改善对策 | 经验萃取 | 评审后优化 | 评分 |
-        |------------|:------:|-------------|---------|---------|---------|-----------|:----:|
-        | {module} | {severity} | {description} | {cause} | {improve} | {experience} | {judge} | {score} |
+        | 问题现象描述 | 模块 | 严重度(A/B/C) | 原因分析 | 改善对策 | 经验萃取 | 评审后优化 | 评分 |
+        |------------|------|:-----------:|---------|---------|---------|-----------|:----:|
+        | {description} | {module} | {severity} | {cause} | {improve} | {experience} | {judge} | {score} |
 
         Requirements:
         1. Keep the exact table header format as shown above
@@ -277,7 +264,7 @@ async def startup_event():
         faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path=vector_db_path, model_name=encoding_model_name); # 初始化 faiss 檢索物件
         dfObj = pd.read_csv('./db/raw/deq_learn_refine2_correct.csv', encoding='utf-8-sig'); # 初始化 faiss 檢索物件
         # 初始化助手服務管理器
-        # logging.info("chat, essay-advisor, k9-helper services are initialized!");
+        logging.info("chat, essay-advisor, k9-helper services are initialized!");
     except Exception as e:
         logging.error(f"Failed to run in startup_event: {e}");
         raise RuntimeError(f"Failed to initialize AIChatService: {e}")
@@ -310,26 +297,6 @@ def sanitize_text(text):
     text = ' '.join(text.split())
     return text
 
-def sanitize_text_2(text):
-    if pd.isna(text):
-        return ""
-    # 基本清理
-    text = str(text).strip()
-    # 移除換行符
-    text = text.replace('\n', ' ').replace('\r', ' ')
-    # 替換中文標點
-    punctuation_map = {
-        '，': ',', '。': '.', '：': ':', '；': ';',
-        '"': '"', '"': '"', ''': "'", ''': "'",
-        '！': '!', '？': '?', '（': '(', '）': ')',
-        '【': '[', '】': ']', '、': ',', '「': '"',
-        '」': '"', '『': "'", '』': "'"
-    }
-    for ch, en in punctuation_map.items():
-        text = text.replace(ch, en)
-    # 轉義引號和其他特殊字符
-    text = text.replace('"', '\\"').replace("'", "\\'")
-    return text
 
 
 def replace_chinese_punctuation(text):
@@ -396,11 +363,10 @@ async def api_ai_chat(request: Request):
         #     return {"response": ai_response};
         # # for i in _pos[0]:
         # if _distances[0][0] < 0.5:
-        message = data.get("message")
+        message = dfObj.iloc[max_pos].to_string();#data.get("message")
         message = replace_chinese_punctuation(message);
         # print(message);
         _submessages = getSubMessages(dfObj.iloc[max_pos]);
-        print(f"type of _submessages is {type(_submessages)}")
         # call generate function
         ai_response = await generate(message=message, submessages=_submessages, search_action=search_action);
         print(type(ai_response))
