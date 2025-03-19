@@ -243,10 +243,6 @@ async def generate(message: str = None, submessages: dict = None, history: List[
 
 """======================Generation of Multi-Rows======================"""
 async def generate_multirows(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2", search_action: int = 1) -> str:
-    # global stackexchange;
-    # global googleserper;
-    # global SERPER_KEY;
-    print("執行標籤搜尋...")
     if message is None:
         raise ValueError("query string is none, please input query string.")
     # try:
@@ -254,7 +250,37 @@ async def generate_multirows(message: str = None, submessages: dict = None, hist
     cleaned_messages = {
         k: sanitize_text(v) for k, v in submessages.items()
     }
-    print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n");
+    print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n")
+
+    headers=["模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
+    value_matrix = [
+        [v for v in cleaned_messages.values()]
+    ]
+    print(value_matrix[0])
+   
+    ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
+    print(f"ret_md_table:\n{ret_md_table}");
+
+    """make responses and return"""
+    ret_dict = {
+        'primary_msg':ret_md_table,
+        # 'stackexchangemsg': format_response,
+        # 'googleserper': gs_responses,
+        'status_code':200
+    }
+    return ret_dict       
+    # global stackexchange;
+    # global googleserper;
+    # global SERPER_KEY;
+    # print("執行標籤搜尋...")
+    # if message is None:
+    #     raise ValueError("query string is none, please input query string.")
+    # # try:
+    # # 清理所有輸入數據
+    # cleaned_messages = {
+    #     k: sanitize_text(v) for k, v in submessages.items()
+    # }
+    # print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n");
      # 首先建立基本的簽名
     # signature = "question -> answer"
     # llmobj = dspy.Predict(signature)
@@ -340,13 +366,13 @@ async def generate_multirows(message: str = None, submessages: dict = None, hist
     #      gs_responses.append("外部資料-google serper:無資料！");
 
     """make responses and return"""
-    ret_dict = {
-        'primary_msg':"",#first_lvl_response.answer,
-        # 'stackexchangemsg': format_response,
-        # 'googleserper': gs_responses,
-        'status_code':200
-    }
-    return ret_dict       
+    # ret_dict = {
+    #     'primary_msg':"",#first_lvl_response.answer,
+    #     # 'stackexchangemsg': format_response,
+    #     # 'googleserper': gs_responses,
+    #     'status_code':200
+    # }
+    # return ret_dict       
 #     except Exception as e:
 #         raise RuntimeError(f"Error : {str(e)}")
 
@@ -368,7 +394,7 @@ async def startup_event():
         logging.info("start to initialize services.......");
         # ai_chat_service = AIChatService(); # 初始化 KB聊天物件
         # print(f"vector db path: {vector_db_path}");
-        faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path="nodata", model_name=encoding_model_name, k=1); # 初始化 faiss 檢索物件
+        faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path="nodata", model_name=encoding_model_name, k=3); # 初始化 faiss 檢索物件
         print("faiss_retriever initializing succeed........");
         faiss_retriever_qsrc = CustomFAISSRetriever(faiss_index_path=faiss_index_path_qsr,
                                                     vector_db_path="nodata",model_name=encoding_model_name,k=4);
