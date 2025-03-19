@@ -145,6 +145,7 @@
             console.log("後端回應：", data);
             if (data && data.response) {
                 // appendMessage("ai", `${JSON.stringify(data.response)}`);
+                // console.log(data.response['primary_msg'])
                 appendMessage("ai:", data.response['primary_msg'],'markdown')
                 // appendMessage("similar questions:", data.response['googleserper'],'markdown')
                 // appendMessage("similar questions:", data.response['googleserper'],'puretxt')
@@ -174,7 +175,6 @@
 
     function appendMessage(role, text, act) {
         const chatContainer = document.getElementById("preview");
-        
         if (!chatContainer) {
             console.error("找不到聊天容器！");
             return;
@@ -196,22 +196,27 @@
         contentDiv.className = `markdown-content prose  $(role === "user" ? "prose-invert" : "")`;
         
         try {
-            if(act === 'markdown') {
-                // 使用 marked 解析 Markdown
-                // const cleanContent = text.trim();
-                const cleanContent = text.trim()
-                .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
-                .replace(/\|{2,}/g, '|');   // Fix multiple pipe characters
-                contentDiv.innerHTML = marked.parse(cleanContent);
-            } else {
-                contentDiv.textContent = text;
-            }
+                console.log("this text var is %s",text);
+                if(text!="nodata"){
+                    if(act === 'markdown') {
+                        // 使用 marked 解析 Markdown
+                        // const cleanContent = text.trim();
+                        const cleanContent = text.trim()
+                        .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
+                        .replace(/\|{2,}/g, '|');   // Fix multiple pipe characters
+                        contentDiv.innerHTML = marked.parse(cleanContent);
+                    } else {
+                        contentDiv.textContent = text;
+                    }
+                }else{
+                    contentDiv.textContent = "未有相似的資料，請重新輸入查詢。"
+                }
             
-            messageDiv.appendChild(contentDiv);
-            messageWrapper.appendChild(messageDiv);
-            chatContainer.appendChild(messageWrapper);
-            // 滾動到底部
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+                messageDiv.appendChild(contentDiv);
+                messageWrapper.appendChild(messageDiv);
+                chatContainer.appendChild(messageWrapper);
+                // 滾動到底部
+                chatContainer.scrollTop = chatContainer.scrollHeight;
 
             // 重新應用程式碼高亮
             // document.querySelectorAll('pre code').forEach((block) => {

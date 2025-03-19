@@ -469,11 +469,10 @@ async def api_ai_chat(request: Request):
             print(f"_pos:{_pos}\n_distances:{_distances}");
             max_pos = np.amax(_pos[0]);
             min_distance = np.amin(_distances[0]);
-            min_distance = np.argmin(_distances[0]);
+            min_distance_index = np.argmin(_distances[0]);
             print(f"most min distance:{min_distance}")
-            
-            if min_distance < 0.5:
-                message = replace_chinese_punctuation(message);
+            message = replace_chinese_punctuation(message);
+            if min_distance < 11:
                 submessages = getSubMessages(dfObj.iloc[max_pos])
             else:
                 #"没有任何匹配的资料"
@@ -505,10 +504,16 @@ async def api_ai_chat(request: Request):
         
         # call generate function
         ai_response = None;
-        if search_action == 1:
-            ai_response = await generate(message=message, submessages=submessages, search_action=search_action);
+        if(submessages!="nodata"):
+            if search_action == 1:
+                ai_response = await generate(message=message, submessages=submessages, search_action=search_action);
+            else:
+                ai_response = await generate_multirows(message=message, submessages=submessages, search_action=search_action)
         else:
-            ai_response = await generate_multirows(message=message, submessages=submessages, search_action=search_action)
+            ai_response = {
+                'primary_msg':"nodata",
+                'status_code':200
+            }
         # 返回 AI 的回應
         return {"response": ai_response}; 
     # except Exception as e:
