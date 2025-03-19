@@ -256,8 +256,8 @@ async def generate_multirows(message: str = None, submessages: dict = None, hist
     }
     print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n");
      # 首先建立基本的簽名
-    # signature = "question -> answer"
-    # llmobj = dspy.Predict(signature)
+    signature = "question -> answer"
+    llmobj = dspy.Predict(signature)
     # 使用 Template 字符串
     
         # 實現標籤搜尋的邏輯
