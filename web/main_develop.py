@@ -68,6 +68,7 @@ datasrc_deqaitrial = os.getenv("DATASRC_DEQ_AITRIAL");
 logging.info(f"Encoding model: {encoding_model_name}");
 logging.info(f"FAISS index path: {faiss_index_path}");
 # logging.info(f"Vector DB path: {vector_db_path}");
+# 定義distance threshold
 
 ################## LLM Initialization ##################
 
@@ -181,6 +182,7 @@ def sanitize_text(text):
 #     text = ' '.join(text.split())
 #     return text
 
+
 def generate_markdown_table(headers, value_matrix):
     writer = MarkdownTableWriter(
         tablename="回覆表格",
@@ -189,7 +191,6 @@ def generate_markdown_table(headers, value_matrix):
         column_alignments=["left"] * len(headers),  # Explicit alignment
         margin=1  # Add margin for better readability
     )
-    
     # Add table style
     writer.style = Style(
         align_header="center",
@@ -483,7 +484,7 @@ def merge_and_remove_duplicated_items(list1:List=None, list2:List=None):
 
 def combine_pos_distance(pos_lists, distance_lists):
     # 合并并去重位置列表
-    all_pos = [pos for sublist in pos_lists for pos in sublist]
+    all_pos = [pos for sublist in pos_lists for pos in sublist if pos > -1]
     combined_pos = sorted(set(all_pos))
     
     # 建立位置-距离映射表

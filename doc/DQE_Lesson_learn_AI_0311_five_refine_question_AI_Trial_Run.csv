@@ -1,4 +1,4 @@
-序号,项目名称,产品形态,questionsource,module,"severity",question,cause,improve,experience,提炼人,judge,score,AI选题,备注,shortquestion,shortanswer,labels
+序号,项目名称,产品形态,问题来源,模块,"严重度",问题现象描述,原因分析,改善对策,经验萃取,提炼人,评审后优化,评分,AI选题,备注,shortquestion,shortanswer,labels
 11,"Zero
 笔记本",笔电,EVT,结构,A,"EVT阶段客户反馈试产样机有严重漏光问题，经DVT试产确认，漏光问题为100%。在DVT和PVT阶段从治具、压合、背胶、物料等各方面验证均未彻底改善。
 
