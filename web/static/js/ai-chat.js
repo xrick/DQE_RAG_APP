@@ -6,7 +6,7 @@
     // 添加搜尋模式變數和控制邏輯
     let search_action = 1; // 預設為精準搜尋
     // 定義初始化聊天介面的函數
-
+    let search_threshold = 0.5;
     function initializeSearchButtons() {
         const preciseButton = document.getElementById('precise-search');
         const tagButton = document.getElementById('tag-search');
@@ -23,6 +23,14 @@
             preciseButton.classList.remove('active');
         });
     }
+
+    // 新增滑動條事件監聽
+    const thresholdSlider = document.getElementById('search-threshold');
+    const thresholdLabel = document.getElementById('search-threshold-label');
+    thresholdSlider.addEventListener('input', function(e) {
+        search_threshold = parseFloat(e.target.value);
+        thresholdLabel.textContent = `当前阈值: ${search_threshold.toFixed(1)}`;
+    });
 
     // function initializeChatInterface() {
     //     const maxRetries = 10;
@@ -132,7 +140,8 @@
             },
             body: JSON.stringify({ 
                 message,
-                search_action // 添加搜尋模式參數
+                search_action, // 添加搜尋模式參數
+                search_threshold
             }),
         })
         .then((response) => {

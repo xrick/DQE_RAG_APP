@@ -423,9 +423,9 @@ def replace_chinese_punctuation(text):
 
 def getSubMessages(df_row):
     return {
-        "description": replace_chinese_punctuation(str(df_row['问题现象描述'])),
         "module": replace_chinese_punctuation(str(df_row['模块'])),
         "severity": replace_chinese_punctuation(str(df_row['严重度'])),
+        "description": replace_chinese_punctuation(str(df_row['问题现象描述'])),
         "cause": replace_chinese_punctuation(str(df_row['原因分析'])),
         "improve": replace_chinese_punctuation(str(df_row['改善对策'])),
         "experience": replace_chinese_punctuation(str(df_row['经验萃取'])),
@@ -469,6 +469,7 @@ async def api_ai_chat(request: Request):
         submessages=None;
         data = await request.json()
         search_action = data.get("search_action")  # 預設為精準搜尋
+        search_threshold = float(data.get("search_threshold", 3.0))  # 新增參數接收
         print(f"---------------search_action:{search_action}--------------");
         message = data.get("message")
         chk_ifnodata = ""
@@ -477,7 +478,7 @@ async def api_ai_chat(request: Request):
             print(f"_pos:{_pos}\n_distances:{_distances}");
             max_pos = np.amax(_pos[0]);
             min_distance = np.amin(_distances[0]);
-            min_distance_index = np.argmin(_distances[0]);
+            # min_distance_index = np.argmin(_distances[0]);
             print(f"most min distance:{min_distance}")
             message = replace_chinese_punctuation(message);
             if min_distance < 11:
