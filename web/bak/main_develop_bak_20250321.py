@@ -68,11 +68,6 @@ datasrc_deqaitrial = os.getenv("DATASRC_DEQ_AITRIAL");
 logging.info(f"Encoding model: {encoding_model_name}");
 logging.info(f"FAISS index path: {faiss_index_path}");
 # logging.info(f"Vector DB path: {vector_db_path}");
-
-required_columns = [
-        '模块', '严重度', '问题现象描述', '原因分析', 
-        '改善对策', '经验萃取', '评审后优化', '评分'
-]
 # 定義distance threshold
 
 ################## LLM Initialization ##################
@@ -247,63 +242,23 @@ async def generate(message: str = None, submessages: dict = None, history: List[
 #     except Exception as e:
 #         raise RuntimeError(f"Error : {str(e)}")
 
-def convert_dr_to_list(row):
-    global required_columns;
-    # 獲取當前行的所有值
-    print(f"type of row:{type(row)}")
-    row_data = []
-    max_length = 1  # 預設長度為1
-    # 步驟4：檢查是否有列表值並確定最大長度
-    for col in required_columns:
-        print(f"row[col]:\n    col:{col}\n    row[col]:{row[col]}\n");
-        if isinstance(row[col], list):
-            max_length = max(max_length, len(row[col]))
-    # 步驟5：處理每一列的值
-    for i in range(max_length):
-        current_row = []
-        for col in required_columns:
-            value = row[col]
-            value = sanitize_text(replace_chinese_punctuation(value)) #進行資料清理
-            if isinstance(value, list):
-                # 如果是列表，取對應索引的值，如果索引超出範圍則使用空字符串
-                current_row.append(value[i] if i < len(value) else '')
-            else:
-                # 如果不是列表，則重複使用該值
-                current_row.append(value)
-        row_data.append(current_row)
-    return row_data
-
-def convert_df_to_list(df, pos_list)->List:
-    """
-    將DataFrame轉換為m*n列表
-    Parameters:
-    df (pandas.DataFrame): 輸入的DataFrame，包含指定的列
-    Returns:
-    list: 轉換後的二維列表
-    """
-    # 步驟1：定義所需的列順序
-    
-    result_list = []
-    for idx in pos_list:
-        _row = df.iloc[idx]
-        result_list.extend(convert_dr_to_list(_row));
-        # result_list.extend(convert_dr_to_list(_row, required_columns));
-    return result_list
-
 """======================Generation of Multi-Rows======================"""
-async def generate_multirows(message: str = None, data_frame:pd.DataFrame = None, data_pos:List=None, history: List[Dict[str, str]] = None, model: str = "deepseek-r1", search_action: int = 2) -> str:
+async def generate_multirows(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2", search_action: int = 1) -> str:
     if message is None:
         raise ValueError("query string is none, please input query string.")
     # try:
     # 清理所有輸入數據
-    # cleaned_messages = {
-    #     k: sanitize_text(v) for k, v in submessages.items()
-    # }
-    # print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n")
-    value_matrix = convert_df_to_list(data_frame, data_pos)
-    
-    # 產生markdown table
+    cleaned_messages = {
+        k: sanitize_text(v) for k, v in submessages.items()
+    }
+    print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n")
+
     headers=["模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
+    value_matrix = [
+        [v for v in cleaned_messages.values()]
+    ]
+    print(value_matrix[0])
+   
     ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
     print(f"ret_md_table:\n{ret_md_table}");
 
@@ -315,10 +270,118 @@ async def generate_multirows(message: str = None, data_frame:pd.DataFrame = None
         'status_code':200
     }
     return ret_dict       
+    # global stackexchange;
+    # global googleserper;
+    # global SERPER_KEY;
+    # print("執行標籤搜尋...")
+    # if message is None:
+    #     raise ValueError("query string is none, please input query string.")
+    # # try:
+    # # 清理所有輸入數據
+    # cleaned_messages = {
+    #     k: sanitize_text(v) for k, v in submessages.items()
+    # }
+    # print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n");
+     # 首先建立基本的簽名
+    # signature = "question -> answer"
+    # llmobj = dspy.Predict(signature)
+    # 使用 Template 字符串
     
+        # 實現標籤搜尋的邏輯
+    # prompt_template = """
+    #     Role: 您是一個表格生成專家，擅長將結構化數據轉換為規範的Markdown表格
+    #     Task: 根據提供的數據生成多行Markdown表格，需滿足以下格式要求：
+
+    #     | 模組 | 嚴重度 | 問題現象描述 | 原因分析 | 改善對策 | 經驗萃取 | 評審後優化 | 評分 |
+    #     |------|:------:|--------------|---------|----------|----------|------------|:----:|
+    #     {% for item in items %}
+    #     | {{ item.module }} | {{ item.severity }} | {{ item.description }} | {{ item.cause }} | {{ item.improve }} | {{ item.experience }} | {{ item.judge }} | {{ item.score }} |
+    #     {% endfor %}
+
+    #     嚴格要求：
+    #     1. 必須包含完整的表頭，且順序不可變更
+    #     2. 每行數據需嚴格對應表頭欄位
+    #     3. 若數值為空則填入「暫無數據」
+    #     4. 使用<br>符號處理欄位內的換行
+    #     5. 評分欄位必須是1-5的整數，若無則標示「待評分」
+    #     6. 嚴格保持表格對齊格式
+    #     7. 根據以下JSON數據生成{{ row_count }}行：
+    #     {{ data_sample }}
+    #     """
+    # sample_data = {
+    #     "items": [{
+    #         "module": cleaned_messages['module'],
+    #         "severity": cleaned_messages['severity'],
+    #         "description": cleaned_messages['description'],
+    #         "cause": cleaned_messages['cause'],
+    #         "improve": cleaned_messages['improve'],
+    #         "experience": cleaned_messages['experience'],
+    #         "judge": cleaned_messages['judge'],
+    #         "score": cleaned_messages['score'] or "待評分"
+    #     }]
+    # }
+    # promptPatternStr = prompt_template.format(**cleaned_messages)
+    # 
+    # promptPatternStr = prompt_template.format(
+    #     row_count=len(sample_data['items']),
+    #     data_sample=json.dumps(sample_data, ensure_ascii=False),
+    #     **{k: v or "暫無數據" for k, v in cleaned_messages.items()}
+    # )
+    # print(f"*******************\n{promptPatternStr}\n***********************");
+    # 創建預測對象並返回結果
+    # first_lvl_response = llmobj(question=promptPatternStr)
+    
+    # responses.append(first_lvl_response.answer);
+    
+    """ connect to stackexchange"""
+    # responses = []
+    # raw_ret_msg = stackexchange.run(cleaned_messages['description']);
+    # processed_ret_msg = format_qa_content(raw_ret_msg)
+    # if(len(processed_ret_msg) > 6):
+    #     responses.append("StackExchange上類似的問題：\n"+processed_ret_msg);
+    # else:
+    #     responses.append("StackExchange上類似的問題：无");
+    # format_response = "\n\n".join(responses)
+
+    """google serper api"""
+    # headers = {
+    #     'X-API-KEY': SERPER_KEY,
+    #     'Content-Type': 'application/json'
+    # }
+    # payload = json.dumps({
+    #     "q": message
+    # })
+    # googleserper.request("POST", "/search", payload, headers)
+    # res = googleserper.getresponse()
+    # gs_data= res.read().decode("utf-8")
+    # # print(data.decode("utf-8"))
+    # data_dict = eval(gs_data)
+    # gs_content = data_dict["organic"]
+    # gs_responses = [];
+    # gs_row_count = 1;
+    # for c in gs_content:
+    #     gs_responses.append(f"{gs_row_count}.標題:{c['title']}<br> 連結:<href>{c['link']}<br> 描述:{c['snippet']}<br>");
+    #     gs_row_count += 1;
+    
+    # if len(gs_responses) < 0:
+    #      gs_responses.append("外部資料-google serper:無資料！");
+
+    """make responses and return"""
+    # ret_dict = {
+    #     'primary_msg':"",#first_lvl_response.answer,
+    #     # 'stackexchangemsg': format_response,
+    #     # 'googleserper': gs_responses,
+    #     'status_code':200
+    # }
+    # return ret_dict       
+#     except Exception as e:
+#         raise RuntimeError(f"Error : {str(e)}")
+
+
 def search_similar_questions(retriever, question):
     pos, distances = retriever(question)
     return pos, distances
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -453,8 +516,7 @@ async def api_ai_chat(request: Request):
         data = await request.json()
         search_action = data.get("search_action")  # 預設為精準搜尋
         print(f"---------------search_action:{search_action}--------------");
-        message = data.get("message")
-        chk_ifnodata = ""
+        message = data.get("message");
         if search_action == 1:
             _pos, _distances = search_similar_questions(faiss_retriever, message);
             print(f"_pos:{_pos}\n_distances:{_distances}");
@@ -467,37 +529,51 @@ async def api_ai_chat(request: Request):
                 submessages = getSubMessages(dfObj.iloc[max_pos])
             else:
                 #"没有任何匹配的资料"
-                chk_ifnodata="nodata";
+                submessages="nodata";
         else:
             #進行相似度搜尋
             _pos_qsrc, _distances_qsrc = search_similar_questions(faiss_retriever_qsrc, message);
             _pos_module, _distance_module =  search_similar_questions(faiss_retriever_module,message);
-            combined_pos_list=None
-            combined_dist_list = None
-
             if not isinstance(_pos_qsrc, np.ndarray):
                 _pos_qsrc.extend(_pos_module);
-                _distances_qsrc.extend(_distance_module)
-                combined_pos_list, combined_dist_list = combine_pos_distance(_pos_qsrc, _distances_qsrc);
+                _distances_qsrc.extend(_distance_module);
             else:
-                _conc_pos_list = np.concatenate([_pos_qsrc, _pos_module], axis=0)
-                _conc_dist_list = np.concatenate([_distances_qsrc, _distance_module], axis=0)
-                combined_pos_list, combined_dist_list = combine_pos_distance(_conc_pos_list, _conc_dist_list);
-            print(f"combined_pos_list:\n{combined_pos_list}\ncombined_dist_list:\n{combined_dist_list}");
+                combined_pos_list, combined_dist_list = combine_pos_distance(_pos_qsrc, _distances_qsrc);
+            print(f"_pos_qsrc:\n{_pos_qsrc}\n_distances_qsrc:\n{_distances_qsrc}");
             
+            # filtered_pos_qsrc = [];
+            # for i in range(len(_distances_qsrc[0])):
+            #     _d = _distances_qsrc[0][i];
+            #     if _d < 11:
+            #         filtered_pos_qsrc.append(_pos_qsrc[i])
+            # filtered_pos_module=[]
+            # for j in range(len(_distance_module[0])):
+            #     _d = _distance_module[0][j]
+            #     if _d < 11:
+            #         filtered_pos_module.append(_pos_module[j])
             message = replace_chinese_punctuation(message);
+            submessages = []
             if(len(combined_pos_list) > 0):
-                submessages = dfObj_aitrial;
+                for item in combined_pos_list:
+                    submessages.append(getSubMessages(dfObj_aitrial.iloc[item]))
+                print(f"search action:{search_action}, and len of submessages:{len(submessages)}");
             if len(combined_pos_list) < 1:
-                chk_ifnodata="nodata";
+                submessages.append("nodata");
+            # if len(filtered_pos_qsrc) > 0:
+            #     for item in filtered_pos_qsrc:
+            #         submessages.append(getSubMessages(dfObj_aitrial.iloc[item]));
+            # if len(filtered_pos_module) > 0:
+            #     for item in filtered_pos_module:
+            #         submessages.append(getSubMessages(dfObj_aitrial.iloc[item]));
+            
         
         # call generate function
         ai_response = None;
-        if(chk_ifnodata!="nodata"):
+        if(submessages!="nodata"):
             if search_action == 1:
                 ai_response = await generate(message=message, submessages=submessages, search_action=search_action);
             else:
-                ai_response = await generate_multirows(message=message, data_frame=submessages, data_pos=combined_pos_list, search_action=search_action)
+                ai_response = await generate_multirows(message=message, submessages=submessages, search_action=search_action)
         else:
             ai_response = {
                 'primary_msg':"nodata",
