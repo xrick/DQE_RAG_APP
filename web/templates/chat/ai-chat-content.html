@@ -25,11 +25,12 @@
         .container {
             display: flex;
             flex-direction: column;
-            height: 85vh;
+            /* height: 85vh; */
+            height: 90vh;
             gap: 10px;
         }
         #preview {
-            flex: 2;
+            flex: 3;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -42,6 +43,7 @@
             display: flex;
             gap: 10px;
             height:10vh;
+            margin-bottom: 10px;  /* 增加底部間距 */
         }
         #editor {
             flex: 1;
@@ -154,7 +156,7 @@
         
         /* 搜尋按鈕樣式 */
         .search-button {
-            padding: 8px 16px;
+            /* padding: 8px 16px; */
             border: 2px solid #bdbdbd; /* 改為淺灰色邊框 */
             border-radius: 20px;
             background-color: white;
@@ -162,6 +164,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 14px;
+            margin: 15px 0;  /* 增加上下間距 */
+            padding: 0 10px;  /* 增加左右內距 */
         }
         
         /* 按鈕被按下的樣式 */
@@ -178,6 +182,15 @@
         
         .search-button.active:hover {
             background-color: #bdbdbd; /* 活動狀態下懸停時稍深的灰色 */
+        }
+
+        #search-threshold {
+            margin-top: 15px;
+        }
+
+        #search-threshold-label {
+            margin-top: 10px;
+            margin-bottom: 5px;
         }
 
         /* 調整用戶消息樣式 */
