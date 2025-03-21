@@ -481,11 +481,12 @@ async def api_ai_chat(request: Request):
             # min_distance_index = np.argmin(_distances[0]);
             print(f"most min distance:{min_distance}")
             message = replace_chinese_punctuation(message);
-            if min_distance < 11:
-                submessages = getSubMessages(dfObj.iloc[max_pos])
-            else:
-                #"没有任何匹配的资料"
-                chk_ifnodata="nodata";
+            submessages = getSubMessages(dfObj.iloc[max_pos])
+            # if min_distance < 11:
+            #     submessages = getSubMessages(dfObj.iloc[max_pos])
+            # else:
+            #     #"没有任何匹配的资料"
+            #     chk_ifnodata="nodata";
         else:
             #進行相似度搜尋
             _pos_qsrc, _distances_qsrc = search_similar_questions(faiss_retriever_qsrc, message);
