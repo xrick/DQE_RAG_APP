@@ -17,13 +17,12 @@ import numpy as np
 from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
 from langchain_ollama.llms import OllamaLLM
 # from langchain_community.utilities import StackExchangeAPIWrapper
-import http.client
+# import http.client
 import re
 import html
 import json
 from pytablewriter import MarkdownTableWriter
 from pytablewriter.style import Style
-import re
 
 ###setup debug
 logging.basicConfig(
@@ -76,8 +75,6 @@ required_columns = [
 ]
 # 定義distance threshold
 
-# regular expression ptterns
-
 ################## LLM Initialization ##################
 
 def InitializeLLM_DeepSeekR1():
@@ -106,7 +103,7 @@ def InitializeLLM_Phi4():
 ###########
 # LLM初始化
 ###########
-# InitializeLLM_DeepSeekR1();
+InitializeLLM_DeepSeekR1();
 """
 问题现象描述:{submessages['question']}2
 1.模块:{submessages['module']}0
@@ -152,10 +149,6 @@ def format_context_to_md(context):
     返回:
         str: 结构化Markdown文档，含自动生成的目录锚点
     """
-
-#check the is the text only contain english
-def is_english(text):
-    return bool(re.match(r'^[a-zA-Z\s]+$', text))
 
 def gen_data_src_list(dict_data=None):
     row_list = [v for v in dict_data.values]
@@ -235,7 +228,7 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     value_matrix = [
         [v for v in cleaned_messages.values()]
     ]
-    # print(value_matrix[0])
+    print(value_matrix[0])
    
     ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
     print(f"ret_md_table:\n{ret_md_table}");
@@ -298,30 +291,20 @@ def convert_df_to_list(df, pos_list)->List:
     return result_list
 
 """======================Generation of Multi-Rows======================"""
-async def generate_multirows(message: str = None, data_frame:pd.DataFrame = None,  data_pos:List=None, search_distances:List=None, history: List[Dict[str, str]] = None, model: str = "deepseek-r1", search_action: int = 2) -> str:
+async def generate_multirows(message: str = None, data_frame:pd.DataFrame = None, data_pos:List=None, history: List[Dict[str, str]] = None, model: str = "deepseek-r1", search_action: int = 2) -> str:
     if message is None:
         raise ValueError("query string is none, please input query string.")
-    
+    # try:
+    # 清理所有輸入數據
+    # cleaned_messages = {
+    #     k: sanitize_text(v) for k, v in submessages.items()
+    # }
+    # print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n")
     value_matrix = convert_df_to_list(data_frame, data_pos)
-    for j in range(len(search_distances)):
-        dist = search_distances[j]
-        related_degree = "";
-        if dist < 0.5 and dist > 0:
-            related_degree = "高"
-        elif dist< 10 and dist > 0.5:
-            related_degree = "中"
-        else:
-            related_degree = "低"
-        value_matrix[j] = [related_degree]+value_matrix[j]
-
-    # 產生markdown table
-    # headers=["關聯度","模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
-    headers=["關聯度","模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
-    ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
     
-        
-        # ret_md_table[j] = ret_md_table[0][j].insert(0, related_degree)
-        
+    # 產生markdown table
+    headers=["模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
+    ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
     print(f"ret_md_table:\n{ret_md_table}");
 
     """make responses and return"""
@@ -514,7 +497,7 @@ async def api_ai_chat(request: Request):
             if search_action == 1:
                 ai_response = await generate(message=message, submessages=submessages, search_action=search_action);
             else:
-                ai_response = await generate_multirows(message=message, data_frame=submessages, data_pos=combined_pos_list, search_distances=combined_dist_list, search_action=search_action)
+                ai_response = await generate_multirows(message=message, data_frame=submessages, data_pos=combined_pos_list, search_action=search_action)
         else:
             ai_response = {
                 'primary_msg':"nodata",
