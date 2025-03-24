@@ -9,14 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 # from app.ai_chat_service import AIChatService
 from dotenv import load_dotenv
 import pandas as pd
-# from openai import AsyncOpenAI
-# import asyncio
-# from libs.base_classes import AssistantRequest, AssistantResponse
 import logging
 import numpy as np
-from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
 from langchain_ollama.llms import OllamaLLM
-# from langchain_community.utilities import StackExchangeAPIWrapper
 import http.client
 import re
 import html
@@ -24,6 +19,13 @@ import json
 from pytablewriter import MarkdownTableWriter
 from pytablewriter.style import Style
 import re
+from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
+from libs.RAG.LLM.LLMInitializer import LLMInitializer;
+from libs.RAG.Tools.ContentSummarizer import WikiSummarizer
+# from openai import AsyncOpenAI
+# import asyncio
+# from libs.base_classes import AssistantRequest, AssistantResponse
+# from langchain_community.utilities import StackExchangeAPIWrapper
 
 ###setup debug
 logging.basicConfig(
@@ -62,19 +64,9 @@ encoding_model_name = os.getenv("SENTENCE_MODEL")
 faiss_index_path = os.getenv("FAISS_INDEX_PATH")
 faiss_index_path_qsr = os.getenv("FAISS_INDEX_QUESRC_INDEX");
 faiss_index_path_module = os.getenv("FAISS_INDEX_MODULE_INDEX");
-datasrc_deqlearn = os.getenv("DATASRC_DEQ_LEARN");
-datasrc_deqaitrial = os.getenv("DATASRC_DEQ_AITRIAL");
-
-# vector_db_path = os.getenv("FAISS_DB_PATH")
-logging.info(f"Encoding model: {encoding_model_name}");
-logging.info(f"FAISS index path: {faiss_index_path}");
-# logging.info(f"Vector DB path: {vector_db_path}");
-
-required_columns = [
-        '模块', '严重度', '问题现象描述', '原因分析', 
-        '改善对策', '经验萃取', '评审后优化', '评分'
-]
-# 定義distance threshold
+datasrc_deqlearn = os.getenv("DATASRC_DEQ_AITRIAL")
+datasrc_deqaitrial = os.getenv("DATASRC_DEQ_AITRIAL")
+retrieval_num = 4;
 
 # regular expression ptterns
 
@@ -194,6 +186,9 @@ def sanitize_text(text):
 #     text = ' '.join(text.split())
 #     return text
 
+def search_similar_questions(retriever, question):
+    pos, distances = retriever(question)
+    return pos, distances
 
 def generate_markdown_table(headers, value_matrix):
     writer = MarkdownTableWriter(
@@ -249,8 +244,6 @@ async def generate(message: str = None, submessages: dict = None, history: List[
     }
     return ret_dict       
 
-
-    
 #     except Exception as e:
 #         raise RuntimeError(f"Error : {str(e)}")
 
@@ -306,24 +299,20 @@ async def generate_multirows(message: str = None, data_frame:pd.DataFrame = None
     for j in range(len(search_distances)):
         dist = search_distances[j]
         related_degree = "";
-        if dist < 0.5 and dist > 0:
-            related_degree = "高"
-        elif dist< 10 and dist > 0.5:
-            related_degree = "中"
+        if dist < 5 and dist > 0:
+            related_degree = "高<br>"+str(dist)
+        elif dist< 11 and dist > 5:
+            related_degree = "中<br>"+str(dist)
         else:
-            related_degree = "低"
+            related_degree = "低<br>"+str(dist)
         value_matrix[j] = [related_degree]+value_matrix[j]
 
     # 產生markdown table
     # headers=["關聯度","模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
     headers=["關聯度","模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
     ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
-    
-        
         # ret_md_table[j] = ret_md_table[0][j].insert(0, related_degree)
-        
     print(f"ret_md_table:\n{ret_md_table}");
-
     """make responses and return"""
     ret_dict = {
         'primary_msg':ret_md_table,
@@ -331,11 +320,9 @@ async def generate_multirows(message: str = None, data_frame:pd.DataFrame = None
         # 'googleserper': gs_responses,
         'status_code':200
     }
-    return ret_dict       
+    return ret_dict
     
-def search_similar_questions(retriever, question):
-    pos, distances = retriever(question)
-    return pos, distances
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -349,21 +336,21 @@ async def startup_event():
         logging.info("start to initialize services.......");
         # ai_chat_service = AIChatService(); # 初始化 KB聊天物件
         # print(f"vector db path: {vector_db_path}");
-        faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path="nodata", model_name=encoding_model_name, k=3); # 初始化 faiss 檢索物件
-        print("faiss_retriever initializing succeed........");
+        faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path="nodata", model_name=encoding_model_name, k=retrieval_num); # 初始化 faiss 檢索物件
+        logging.info("faiss_retriever initializing succeed........");
         faiss_retriever_qsrc = CustomFAISSRetriever(faiss_index_path=faiss_index_path_qsr,
-                                                    vector_db_path="nodata",model_name=encoding_model_name,k=4);
-        print("faiss_retriever_qsrc initializing succeed........");
+                                                    vector_db_path="nodata",model_name=encoding_model_name,k=retrieval_num);
+        logging.info("faiss_retriever_qsrc initializing succeed........");
         faiss_retriever_module = CustomFAISSRetriever(faiss_index_path=faiss_index_path_module,
-                                                    vector_db_path="nodata",model_name=encoding_model_name,k=4);
-        print("faiss_retriever_module initializing succeed........");
+                                                    vector_db_path="nodata",model_name=encoding_model_name,k=retrieval_num);
+        logging.info("faiss_retriever_module initializing succeed........");
         dfObj = pd.read_csv(datasrc_deqlearn, encoding='utf-8-sig'); # 初始化 faiss 檢索物件
-        print("dfObj initializing succeed........");
+        logging.info("dfObj initializing succeed........");
         dfObj_aitrial = pd.read_csv(datasrc_deqaitrial, encoding='utf-8-sig');
-        print("dfObj_aitrial initializing succeed........");
+        logging.info("dfObj_aitrial initializing succeed........");
 
         # 初始化助手服務管理器
-        logging.info("chat, essay-advisor, k9-helper services are initialized!");
+        logging.info("Maple-Leaf AI KB Services Initialized...");
     except Exception as e:
         logging.error(f"Failed to run in startup_event: {e}");
         raise RuntimeError(f"Failed to initialize AIChatService: {e}")
@@ -458,72 +445,112 @@ def combine_pos_distance(pos_lists, distance_lists):
     
     return combined_pos, combined_dist
 
+def sort_list_pair(pos_list:List=None, dist_list:List=None):
+    sorted_pairs = sorted(zip(dist_list, pos_list), key=lambda x: x[0])
+    dist_list_sorted, pos_list_sorted = zip(*sorted_pairs) if sorted_pairs else ([], [])
+
+    # convert to List type
+    pos_list_sorted = list(pos_list_sorted)
+    dist_list_sorted = list(dist_list_sorted)
+    return pos_list_sorted, dist_list_sorted
 
 # AI 聊天接口（非流式）
 @app.post("/api/ai-chat")
 async def api_ai_chat(request: Request):
     # try:
-        # 從請求中提取用戶消息
-        # _pos=None;
-        # _distances=None;
-        submessages=None;
-        data = await request.json()
-        search_action = data.get("search_action")  # 預設為精準搜尋
-        search_threshold = float(data.get("search_threshold", 3.0))  # 新增參數接收
-        print(f"---------------search_action:{search_action}--------------");
-        message = data.get("message")
-        chk_ifnodata = ""
-        if search_action == 1:
-            _pos, _distances = search_similar_questions(faiss_retriever, message);
-            print(f"_pos:{_pos}\n_distances:{_distances}");
-            max_pos = np.amax(_pos[0]);
-            min_distance = np.amin(_distances[0]);
-            # min_distance_index = np.argmin(_distances[0]);
-            print(f"most min distance:{min_distance}")
-            message = replace_chinese_punctuation(message);
-            submessages = getSubMessages(dfObj.iloc[max_pos])
-            # if min_distance < 11:
-            #     submessages = getSubMessages(dfObj.iloc[max_pos])
-            # else:
-            #     #"没有任何匹配的资料"
-            #     chk_ifnodata="nodata";
-        else:
-            #進行相似度搜尋
-            _pos_qsrc, _distances_qsrc = search_similar_questions(faiss_retriever_qsrc, message);
-            _pos_module, _distance_module =  search_similar_questions(faiss_retriever_module,message);
-            combined_pos_list=None
-            combined_dist_list = None
-
-            if not isinstance(_pos_qsrc, np.ndarray):
-                _pos_qsrc.extend(_pos_module);
-                _distances_qsrc.extend(_distance_module)
-                combined_pos_list, combined_dist_list = combine_pos_distance(_pos_qsrc, _distances_qsrc);
-            else:
-                _conc_pos_list = np.concatenate([_pos_qsrc, _pos_module], axis=0)
-                _conc_dist_list = np.concatenate([_distances_qsrc, _distance_module], axis=0)
-                combined_pos_list, combined_dist_list = combine_pos_distance(_conc_pos_list, _conc_dist_list);
-            print(f"combined_pos_list:\n{combined_pos_list}\ncombined_dist_list:\n{combined_dist_list}");
-            
-            message = replace_chinese_punctuation(message);
-            if(len(combined_pos_list) > 0):
-                submessages = dfObj_aitrial;
-            if len(combined_pos_list) < 1:
-                chk_ifnodata="nodata";
+    data = await request.json()
+    search_action = int(data.get("search_action"))  # 預設為精準搜尋
+    search_threshold = float(data.get("search_threshold", 15.0))  # 新增參數接收
+    print(f"---------------search_action:{search_action}--------------");
+    print(f"---------------search_threshold:{search_threshold}--------------");
+    message = data.get("message")
+    filtered_summary = None
+    chk_ifnodata = "ragsearch"
+    _poses = []
+    _dists = []
+    if search_action == 1:
+        _pos, _distances = search_similar_questions(faiss_retriever, message);
+        print(f"_pos:{_pos}\n_distances:{_distances}");
         
-        # call generate function
-        ai_response = None;
-        if(chk_ifnodata!="nodata"):
+        sorted_poses, sorted_dists = sort_list_pair(_pos[0], _distances[0])
+        print(f"sorted_pos:{sorted_poses}\nsorted_distances:{sorted_dists}");
+        pos_len = len(sorted_poses)
+        dist = -1.0
+        # min_dist_idx = -1
+        min_dist = 99999
+        # _poses = []
+        # _dists = []
+        for i in range(pos_len):
+            dist = sorted_dists[i]
+            if dist < search_threshold and dist != -1:
+                _poses.append(sorted_poses[i])
+                _dists.append(sorted_dists[i])
+                if min_dist > dist:
+                    min_dist = dist
+                    # min_dist_idx = sorted_poses[i]
+            # submessages = getSubMessages(dfObj.iloc[min_dist_idx])
+        if not _poses:
+            #"没有任何匹配的资料"
+            chk_ifnodata="nodata"
+    elif search_action==2:
+        #進行相似度搜尋
+        _pos_qsrc, _distances_qsrc = search_similar_questions(faiss_retriever_qsrc, message);
+        _pos_module, _distance_module =  search_similar_questions(faiss_retriever_module,message);
+        message = replace_chinese_punctuation(message);
+        if not isinstance(_pos_qsrc, np.ndarray):
+            _pos_qsrc.extend(_pos_module);
+            _distances_qsrc.extend(_distance_module)
+            _poses, _dists = combine_pos_distance(_pos_qsrc, _distances_qsrc);
+        else:
+            _conc_pos_list = np.concatenate([_pos_qsrc, _pos_module], axis=0)
+            _conc_dist_list = np.concatenate([_distances_qsrc, _distance_module], axis=0)
+            _poses, _dists = combine_pos_distance(_conc_pos_list, _conc_dist_list);
+        print(f"combined_pos_list:\n{_poses}\ncombined_dist_list:\n{_dists}");
+        message = replace_chinese_punctuation(message);
+        if not _poses:
+            search_action = 99
+            chk_ifnodata="nodata";
+    else:
+        if search_action == 3:
+            llm_init = LLMInitializer()
+            try:
+                # 初始化deepseek-r1:7b模型
+                llm = llm_init.init_ollama_model(
+                    model="deepseek-r1:7b",
+                    temperature=0.7
+                )
+                
+                # 創建摘要器並使用
+                wiki_summarizer = WikiSummarizer(llm)
+                query = replace_chinese_punctuation(message);
+                summary = wiki_summarizer.summarize(query).replace("Abstract:","摘要：").replace("Summarization Content:","内容概要：").replace("a. Most Important Points:","一、重点说明：").replace("b. Extended Content:","二、延伸内容：")
+                filtered_summary = summary[summary.find("</think>")+8:]
+                 
+                # print(f"查詢內容：{query}\n回傳結果:\n{filtered_summary}")
+                
+            except Exception as e:
+                print(f"Error: {str(e)}")
+    
+    # call generate function
+    ai_response = None;
+    if search_action != 99:
+        if chk_ifnodata != "nodata":
             if search_action == 1:
-                ai_response = await generate(message=message, submessages=submessages, search_action=search_action);
+                ai_response = await generate_multirows(message=message, data_frame=dfObj, data_pos=_poses, search_distances=_dists, search_action=search_action);
+            elif search_action == 2:
+                ai_response = await generate_multirows(message=message, data_frame=dfObj_aitrial, data_pos=_poses, search_distances=_dists, search_action=search_action)
             else:
-                ai_response = await generate_multirows(message=message, data_frame=submessages, data_pos=combined_pos_list, search_distances=combined_dist_list, search_action=search_action)
+                ai_response = {
+                    'primary_msg':filtered_summary,
+                    'status_code':200
+                }
         else:
             ai_response = {
                 'primary_msg':"nodata",
                 'status_code':200
             }
-        # 返回 AI 的回應
-        return {"response": ai_response}; 
+    # 返回 AI 的回應
+    return {"response": ai_response}; 
     # except Exception as e:
     #     raise HTTPException(status_code=500, detail=str(e))
 

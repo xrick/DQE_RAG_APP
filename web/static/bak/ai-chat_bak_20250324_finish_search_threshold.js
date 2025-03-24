@@ -1,9 +1,4 @@
 // ai-chat.js
-// 在 ai-chat.js 開頭添加
-let loadingAnimationTimer = null;
-let currentLoadingText = '';
-const loadingText = '搜尋中......';
-
 (function () {
     console.log("ai-chat.js 加載完成！");
     console.log("it has invoke！");
@@ -15,27 +10,17 @@ const loadingText = '搜尋中......';
     function initializeSearchButtons() {
         const preciseButton = document.getElementById('precise-search');
         const tagButton = document.getElementById('tag-search');
-        const webButton = document.getElementById('web-search');
         
         preciseButton.addEventListener('click', () => {
             search_action = 1;
             preciseButton.classList.add('active');
             tagButton.classList.remove('active');
-            webButton.classList.remove('active');
         });
         
         tagButton.addEventListener('click', () => {
             search_action = 2;
             tagButton.classList.add('active');
             preciseButton.classList.remove('active');
-            webButton.classList.remove('active');
-        });
-
-        webButton.addEventListener('click', () => {
-            search_action = 3;
-            webButton.classList.add('active');
-            preciseButton.classList.remove('active');
-            tagButton.classList.remove('active');
         });
     }
 
@@ -47,6 +32,34 @@ const loadingText = '搜尋中......';
         thresholdLabel.textContent = `当前阈值: ${search_threshold.toFixed(1)}`;
     });
 
+    // function initializeChatInterface() {
+    //     const maxRetries = 10;
+    //     let retryCount = 0;
+    
+    //     function tryInitialize() {
+    //         console.log("嘗試初始化聊天介面...");
+    //         const chatContainer = document.getElementById("preview");
+    //         const messageInput = document.getElementById("editor");
+    //         const sendButton = document.getElementById("submit");
+            
+    //         if (!chatContainer || !messageInput || !sendButton) {
+    //             if (retryCount < maxRetries) {
+    //                 retryCount++;
+    //                 setTimeout(tryInitialize, 100);
+    //                 return;
+    //             }
+    //             console.error("初始化失敗：無法找到必要元素");
+    //             return;
+    //         }
+            
+    //         // 初始化搜尋按鈕
+    //         initializeSearchButtons();
+            
+    //         // 原有的事件綁定邏輯
+    //     }
+        
+    //     tryInitialize();
+    // }
     function initializeChatInterface() {
         const maxRetries = 10;
         let retryCount = 0;
@@ -102,54 +115,6 @@ const loadingText = '搜尋中......';
     // 將函數掛載到全局作用域
     window.initializeChatInterface = initializeChatInterface;
 
-    // 添加動畫控制函數
-    function startLoadingAnimation() {
-        if (loadingAnimationTimer) {
-            clearInterval(loadingAnimationTimer);
-        }
-        
-        currentLoadingText = '';
-        const loadingDiv = document.createElement('div');
-        loadingDiv.id = 'loading-animation';
-        loadingDiv.className = 'w-full flex mb-4 justify-start';
-        
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'max-w-[100%] p-4 rounded-lg bg-gray-100 text-gray-800 mr-auto rounded-bl-none loading-message';
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'markdown-content prose';
-        
-        messageDiv.appendChild(contentDiv);
-        loadingDiv.appendChild(messageDiv);
-        
-        const chatContainer = document.getElementById('preview');
-        chatContainer.appendChild(loadingDiv);
-        
-        let charIndex = 0;
-        loadingAnimationTimer = setInterval(() => {
-            if (charIndex < loadingText.length) {
-                currentLoadingText += loadingText[charIndex];
-                charIndex++;
-            } else {
-                currentLoadingText = '';
-                charIndex = 0;
-            }
-            contentDiv.textContent = currentLoadingText;
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }, 200); // 每200毫秒更新一次
-    }
-
-    function stopLoadingAnimation() {
-        if (loadingAnimationTimer) {
-            clearInterval(loadingAnimationTimer);
-            loadingAnimationTimer = null;
-        }
-        const loadingElement = document.getElementById('loading-animation');
-        if (loadingElement) {
-            loadingElement.remove();
-        }
-    }
-
     // 發送消息的輔助函數
     function sendMessage(message) {
         const chatContainer = document.getElementById("preview");
@@ -165,9 +130,6 @@ const loadingText = '搜尋中......';
 
         // 清空輸入框
         messageInput.value = "";
-
-        // 啟動載入動畫
-        startLoadingAnimation();
 
         // 模擬向後端發送請求
         console.log("正在向後端發送請求...");
@@ -189,8 +151,6 @@ const loadingText = '搜尋中......';
             return response.json();
         })
         .then((data) => {
-            // 停止載入動畫
-            stopLoadingAnimation();
             console.log("後端回應：", data);
             if (data && data.response) {
                 // appendMessage("ai", `${JSON.stringify(data.response)}`);
@@ -203,8 +163,6 @@ const loadingText = '搜尋中......';
             }
         })
         .catch((error) => {
-            // 停止載入動畫
-            stopLoadingAnimation();
             console.error("請求失敗詳情:", error);
             appendMessage("error", `連接失敗: ${error.message}`);
         });
@@ -223,8 +181,6 @@ const loadingText = '搜尋中......';
         headerIds: false,
         mangle: false
     });
-
-    
 
     function appendMessage(role, text, act) {
         const chatContainer = document.getElementById("preview");

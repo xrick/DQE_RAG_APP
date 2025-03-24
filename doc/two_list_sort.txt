@@ -1,0 +1,53 @@
+以下是满足要求的Python代码及时间复杂度分析：
+# 初始数据
+A = [2, 7, 11, 8]
+B = [1.245, 8.654, 4.323, 5.765]
+
+# 根据B值排序两个列表
+sorted_pairs = sorted(zip(B, A), key=lambda x: x[0])
+B_sorted, A_sorted = zip(*sorted_pairs) if sorted_pairs else ([], [])
+
+# 转换为列表类型
+A_sorted = list(A_sorted)
+B_sorted = list(B_sorted)
+
+print("Sorted A:", A_sorted)  # 输出：[2, 11, 8, 7]
+print("Sorted B:", B_sorted)  # 输出：[1.245, 4.323, 5.765, 8.654]
+
+<时间复杂度分析>
+
+
+zip(B, A) 操作：O(n)
+
+将两个n元素列表合并为n个元组
+
+
+
+sorted() 排序：O(n log n)
+
+使用Timsort算法对n个元素进行排序
+
+
+
+zip(*sorted_pairs)：O(n)
+
+解压已排序的n个元组
+
+
+
+list转换：O(n)
+
+将元组转换为列表
+
+
+
+总时间复杂度：O(n) + O(n log n) + O(n) + O(n) = O(n log n)
+</时间复杂度分析>
+关键点说明：
+
+使用元组打包(B,A)元素，确保排序时保持对应关系
+sorted()的key参数明确指定按B值排序
+zip(*...)操作实现高效解包
+最终通过类型转换保证输出格式一致性
+
+该方案在保证功能正确性的同时，达到了最优时间复杂度。对于大型数据集（如10⁶元素），仍可保持高效运行。
