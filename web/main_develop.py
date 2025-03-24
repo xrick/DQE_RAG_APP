@@ -64,11 +64,18 @@ encoding_model_name = os.getenv("SENTENCE_MODEL")
 faiss_index_path = os.getenv("FAISS_INDEX_PATH")
 faiss_index_path_qsr = os.getenv("FAISS_INDEX_QUESRC_INDEX");
 faiss_index_path_module = os.getenv("FAISS_INDEX_MODULE_INDEX");
-datasrc_deqlearn = os.getenv("DATASRC_DEQ_AITRIAL")
+datasrc_deqlearn = os.getenv("DATASRC_DEQ_LEARN")
 datasrc_deqaitrial = os.getenv("DATASRC_DEQ_AITRIAL")
 retrieval_num = 4;
 
-# regular expression ptterns
+logging.info(f"Encoding model: {encoding_model_name}");
+logging.info(f"FAISS index path: {faiss_index_path}");
+# logging.info(f"Vector DB path: {vector_db_path}");
+
+required_columns = [
+        '模块', '严重度', '问题现象描述', '原因分析', 
+        '改善对策', '经验萃取', '评审后优化', '评分'
+]
 
 ################## LLM Initialization ##################
 
@@ -282,7 +289,8 @@ def convert_df_to_list(df, pos_list)->List:
     list: 轉換後的二維列表
     """
     # 步驟1：定義所需的列順序
-    
+    logging.info(f"pos_list passed to convert_df_to_list:{pos_list}")
+    logging.info(f"df rows:{df.shape}")
     result_list = []
     for idx in pos_list:
         _row = df.iloc[idx]
