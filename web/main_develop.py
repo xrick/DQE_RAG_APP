@@ -307,7 +307,7 @@ async def generate_multirows(message: str = None, data_frame:pd.DataFrame = None
     for j in range(len(search_distances)):
         dist = search_distances[j]
         related_degree = "";
-        if dist < 5 and dist > 0:
+        if dist < 5 and dist >= 0:
             related_degree = "高<br>"+str(dist)
         elif dist< 11 and dist > 5:
             related_degree = "中<br>"+str(dist)
