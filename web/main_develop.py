@@ -79,27 +79,27 @@ required_columns = [
 
 ################## LLM Initialization ##################
 
-def InitializeLLM_DeepSeekR1():
-        local_config = {
-            "api_base": "http://localhost:11434/v1",  # 注意需加/v1路徑
-            "api_key": "NULL",  # 特殊標記用於跳過驗證
-            "model": "deepseek-r1:7b",
-            "custom_llm_provider":"deepseek"
-        }
-        dspy.configure(
-            lm=dspy.LM(
-                **local_config
-            )
-        )
-        print("DeepSeek-R1 has initialized!")
+# def InitializeLLM_DeepSeekR1():
+#         local_config = {
+#             "api_base": "http://localhost:11434/v1",  # 注意需加/v1路徑
+#             "api_key": "NULL",  # 特殊標記用於跳過驗證
+#             "model": "deepseek-r1:7b",
+#             "custom_llm_provider":"deepseek"
+#         }
+#         dspy.configure(
+#             lm=dspy.LM(
+#                 **local_config
+#             )
+#         )
+#         print("DeepSeek-R1 has initialized!")
 
-def InitializeLLM_Phi4():
-    global llm;
-    if llm == None:
-        OllamaLLM(model=LLM_MODEL)
-    else:
-        print("llm has initialized........");
-        return;
+# def InitializeLLM_Phi4():
+#     global llm;
+#     if llm == None:
+#         OllamaLLM(model=LLM_MODEL)
+#     else:
+#         print("llm has initialized........");
+#         return;
 
 
 ###########
@@ -340,6 +340,7 @@ async def startup_event():
     global faiss_retriever_module;
     global dfObj;
     global dfObj_aitrial;
+    global llm;
     try:
         logging.info("start to initialize services.......");
         # ai_chat_service = AIChatService(); # 初始化 KB聊天物件
@@ -353,9 +354,11 @@ async def startup_event():
                                                     vector_db_path="nodata",model_name=encoding_model_name,k=retrieval_num);
         logging.info("faiss_retriever_module initializing succeed........");
         dfObj = pd.read_csv(datasrc_deqlearn, encoding='utf-8-sig'); # 初始化 faiss 檢索物件
-        logging.info("dfObj initializing succeed........");
+        logging.info("dfObj initialized succeed........");
         dfObj_aitrial = pd.read_csv(datasrc_deqaitrial, encoding='utf-8-sig');
-        logging.info("dfObj_aitrial initializing succeed........");
+        logging.info("dfObj_aitrial initialized succeed........");
+        llm = LLMInitializer().init_ollama_model()
+        logging.info("llm initialized succeed........");
 
         # 初始化助手服務管理器
         logging.info("Maple-Leaf AI KB Services Initialized...");
@@ -486,8 +489,6 @@ async def api_ai_chat(request: Request):
         dist = -1.0
         # min_dist_idx = -1
         min_dist = 99999
-        # _poses = []
-        # _dists = []
         for i in range(pos_len):
             dist = sorted_dists[i]
             if dist < search_threshold and dist != -1:
@@ -520,13 +521,13 @@ async def api_ai_chat(request: Request):
             chk_ifnodata="nodata";
     else:
         if search_action == 3:
-            llm_init = LLMInitializer()
+            
             try:
                 # 初始化deepseek-r1:7b模型
-                llm = llm_init.init_ollama_model(
-                    model="deepseek-r1:7b",
-                    temperature=0.7
-                )
+                # llm = llm_init.init_ollama_model(
+                #     model="deepseek-r1:7b",
+                #     temperature=0.7
+                # )
                 
                 # 創建摘要器並使用
                 wiki_summarizer = WikiSummarizer(llm)
