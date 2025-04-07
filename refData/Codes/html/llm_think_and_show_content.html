@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI思考過程模擬</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 80%;
+            max-width: 800px;
+        }
+        
+        .chat-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .user-input {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .ai-response {
+            min-height: 200px;
+            line-height: 1.6;
+        }
+        
+        .thinking-text {
+            color: #333;
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background-color: #333;
+            margin-left: 5px;
+            animation: blink 0.7s infinite;
+        }
+        
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background-color: #3367d6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI思考過程模擬</h1>
+        <div class="chat-container">
+            <div class="user-input">
+                <strong>用戶：</strong> 請解釋量子力學的基本原理
+            </div>
+            <div class="ai-response">
+                <strong>AI：</strong> <span id="thinking-text"></span><span class="cursor"></span>
+            </div>
+        </div>
+        <button id="restart-btn">重新開始</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const thinkingText = document.getElementById('thinking-text');
+            const restartBtn = document.getElementById('restart-btn');
+            
+            // 思考階段的內容
+            const thinkingStages = [
+                "讓我思考一下量子力學的基本原理...",
+                "量子力學是描述微觀世界的物理理論。首先，我需要解釋波粒二象性的概念...",
+                "分析中：波粒二象性表明微觀粒子同時具有波動和粒子的性質。這與經典物理學的觀點有很大不同...",
+                "進一步思考：量子力學還包含測不準原理，由海森堡提出。這個原理指出...",
+                "重新組織思路：讓我從頭開始解釋量子力學的核心概念...",
+                "量子力學是20世紀初發展起來的物理學分支，用於描述原子和亞原子尺度的物理現象。其基本原理包括：\n\n1. 波粒二象性：微觀粒子（如電子、光子）同時表現出波動和粒子的性質。\n\n2. 測不準原理：無法同時精確測量粒子的位置和動量。\n\n3. 量子疊加：量子系統可以同時處於多個狀態的疊加。\n\n4. 量子糾纏：兩個粒子可以以一種特殊方式關聯，即使相距很遠。"
+            ];
+            
+            let currentStage = 0;
+            let charIndex = 0;
+            let typingInterval;
+            
+            // 開始打字效果
+            function startTyping() {
+                clearInterval(typingInterval);
+                
+                if (currentStage >= thinkingStages.length) {
+                    return;
+                }
+                
+                const currentText = thinkingStages[currentStage];
+                charIndex = 0;
+                
+                // 清空之前的文字
+                thinkingText.textContent = '';
+                
+                // 開始逐字打印
+                typingInterval = setInterval(() => {
+                    if (charIndex < currentText.length) {
+                        thinkingText.textContent += currentText.charAt(charIndex);
+                        charIndex++;
+                    } else {
+                        clearInterval(typingInterval);
+                        
+                        // 如果不是最後一個階段，等待一段時間後進入下一階段
+                        if (currentStage < thinkingStages.length - 1) {
+                            setTimeout(() => {
+                                currentStage++;
+                                startTyping();
+                            }, 2000);
+                        }
+                    }
+                }, 50);
+            }
+            
+            // 重新開始按鈕點擊事件
+            restartBtn.addEventListener('click', function() {
+                currentStage = 0;
+                startTyping();
+            });
+            
+            // 頁面加載後自動開始
+            startTyping();
+        });
+    </script>
+</body>
+</html>

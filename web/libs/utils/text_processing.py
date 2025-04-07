@@ -1,4 +1,6 @@
 import pandas as pd
+import json
+import ast
 
 
 '''
@@ -65,6 +67,46 @@ def convert_df_to_list(df, pos_list):
         row = df.iloc[idx]
         result_list.extend(convert_dr_to_list(row, required_columns));
     return result_list
+
+
+def format_googleserper_search_results(text_content):
+    """
+    用以解析google.serper.dev查詢回傳的文字內容
+    使用此函式前，呼叫方需要先讀取回傳資料，程式如下：
+    ```python
+        conn = http.client.HTTPSConnection("google.serper.dev")
+        payload = json.dumps({
+        "q": "SSD不读盘"
+        })
+        headers = {
+        'X-API-KEY': '3026422e86bf19796a06b5f15433e9c0cd9bd88a',
+        'Content-Type': 'application/json'
+        }
+        conn.request("POST", "/search", payload, headers)
+        res = conn.getresponse()
+        data = res.read()
+    ```
+    """
+    try:
+        # 使用ast.literal_eval安全地評估Python字面量
+        # 這對於處理Python字典和列表字符串非常有用
+        data = text_content.decode("utf-8")
+        data = ast.literal_eval(text_content)
+        return data
+    except (SyntaxError, ValueError) as e:
+        print(f"解析錯誤: {e}")
+        
+        # 如果ast.literal_eval失敗，嘗試json解析
+        try:
+            # 將單引號替換為雙引號
+            json_str = text_content.replace("'", '"')
+            # 處理可能的特殊字符
+            json_str = json_str.replace('""delete', '"delete')
+            data = json.loads(json_str)
+            return data
+        except json.JSONDecodeError as e:
+            print(f"JSON解析錯誤: {e}")
+            return []
 
 
 

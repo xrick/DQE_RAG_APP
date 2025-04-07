@@ -7,7 +7,7 @@ from langchain_community.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_core.output_parsers import JsonOutputParser
 
-class ContentSummarizer(ABC):
+class WebContentRetriever(ABC):
     """內容摘要基類"""
     def __init__(self, llm: Any):
         self.logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ class ContentSummarizer(ABC):
         """獲取要摘要的內容"""
         pass
     
-    def generate_summary(self, content: str) -> Optional[str]:
+    def generate_content(self, content: str) -> Optional[str]:
         """生成內容摘要"""
         try:
             response = self.chain.invoke({"context": content},)
@@ -54,7 +54,7 @@ class ContentSummarizer(ABC):
             return None
         
 
-class WikiSummarizer(ContentSummarizer):
+class WikiRetriever(WebContentRetriever):
     """Wikipedia內容摘要器"""
     
     def __init__(self, llm: Any):
@@ -79,4 +79,4 @@ class WikiSummarizer(ContentSummarizer):
         content = self.get_content(query)
         if not content:
             return None
-        return self.generate_summary(content)
+        return self.generate_content(content)

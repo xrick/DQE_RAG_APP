@@ -72,12 +72,40 @@ logging.info(f"Encoding model: {encoding_model_name}");
 logging.info(f"FAISS index path: {faiss_index_path}");
 # logging.info(f"Vector DB path: {vector_db_path}");
 
-#所需欄位定義
 required_columns = [
         '模块', '严重度', '问题现象描述', '原因分析', 
         '改善对策', '经验萃取', '评审后优化', '评分'
 ]
 
+################## LLM Initialization ##################
+
+# def InitializeLLM_DeepSeekR1():
+#         local_config = {
+#             "api_base": "http://localhost:11434/v1",  # 注意需加/v1路徑
+#             "api_key": "NULL",  # 特殊標記用於跳過驗證
+#             "model": "deepseek-r1:7b",
+#             "custom_llm_provider":"deepseek"
+#         }
+#         dspy.configure(
+#             lm=dspy.LM(
+#                 **local_config
+#             )
+#         )
+#         print("DeepSeek-R1 has initialized!")
+
+# def InitializeLLM_Phi4():
+#     global llm;
+#     if llm == None:
+#         OllamaLLM(model=LLM_MODEL)
+#     else:
+#         print("llm has initialized........");
+#         return;
+
+
+###########
+# LLM初始化
+###########
+# InitializeLLM_DeepSeekR1();
 """
 问题现象描述:{submessages['question']}2
 1.模块:{submessages['module']}0
@@ -440,11 +468,6 @@ def sort_list_pair(pos_list:List=None, dist_list:List=None):
 # AI 聊天接口（非流式）
 @app.post("/api/ai-chat")
 async def api_ai_chat(request: Request):
-    """
-    edit note:
-    2025/04/02:
-
-    """
     # try:
     data = await request.json()
     search_action = int(data.get("search_action"))  # 預設為精準搜尋
@@ -539,6 +562,26 @@ async def api_ai_chat(request: Request):
     return {"response": ai_response}; 
     # except Exception as e:
     #     raise HTTPException(status_code=500, detail=str(e))
+
+
+# AI 聊天接口（流式）
+# @app.post("/api/ai-chat-stream")
+# async def api_ai_chat_stream(request: Request):
+#     try:
+#         # 從請求中提取用戶消息
+#         data = await request.json()
+#         message = data.get("message")
+#         history = data.get("history", [])
+#         if not message:
+#             raise HTTPException(status_code=400, detail="Message is required")
+#         # 調用 AIChatService 的流式生成方法
+#         async def stream_generator():
+#             async for chunk in ai_chat_service.generate_stream(message, history):
+#                 yield {"content": chunk}
+
+#         return stream_generator()
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
     
 
 # 錯誤處理
