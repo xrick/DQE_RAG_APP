@@ -59,7 +59,7 @@ class WikiRetriever(WebContentRetriever):
         )
         self.content_parser = ContentProcessor()
         self.chain = self.prompt | self.llm
-        '''end of template'''
+        
         # self.wiki = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper(), )
         # self.wiki = WikipediaQueryRun(CustomWikiAPIWrapper())
     
@@ -115,7 +115,7 @@ class GoogleSerperRetriever(WebContentRetriever):
             data = data.decode("utf-8")
             return data
         except Exception as e:
-            self.logger.error(f"Wikipedia檢索失敗: {str(e)}")
+            self.logger.error(f"Google Serper檢索失敗: {str(e)}")
             return None
         
     def format_googleserper_search_results(self, text_content):
@@ -146,3 +146,86 @@ class GoogleSerperRetriever(WebContentRetriever):
         data = self.get_content(query=query)
         data = self.generate_content(content=data)
         return data
+    
+    
+class CompositiveGoogleSerperSummarizer(GoogleSerperRetriever):
+    def __init__(self, llm: Any):
+        super().__init__(llm)
+        self.conn = http.client.HTTPSConnection("google.serper.dev")
+        self.headers = {
+            'X-API-KEY': '3026422e86bf19796a06b5f15433e9c0cd9bd88a',
+            'Content-Type': 'application/json'
+        }
+        self.query=None
+        self.template='''
+            角色:你是一個資深且經驗豐富的RAG Developer, 也是一個有良好技術的自然語言處理工程師.
+            任務:
+            1.現在有使用者輸入及二類資料：
+                a.使用者輸入:
+                  {query}
+                b.外部參考資料:
+                  {web_context}
+                c.內部資料:內容資料是依據使用者的輸入向內部資料庫進行搜尋所取得的資料.
+                  {internal_context}
+            2.請依照上述完成以下需求:
+                a.請先逐步思考使用者輸入
+                b.再依照外部參考資料及內部資料,產生一篇摘要.
+                c.這篇摘要是以使用者輸入為主題及重心.
+                d.這篇摘要的結構包含:
+                    - 摘要主題
+                    - 摘要內容
+                    - 延伸內容
+                e.請輸出為表格式的、易讀及美觀的markdown內容
+        '''
+        self.prompt = PromptTemplate(
+            input_variables=["query","web_context","internal_context"],
+            template=self.template
+        )
+        self.content_parser = ContentProcessor()
+        self.chain = self.prompt | self.llm
+    def gen_payload(self, query:str):
+        payload = json.dumps({
+            "q": query
+        })
+        return payload
+
+    def get_content(self, query: str) -> Optional[str]:
+        """從google serper獲取內容"""
+        try:
+            payload = self.gen_payload(query=query)
+            self.conn.request("POST", "/search", payload, self.headers)
+            response = self.conn.getresponse()
+            data = response.read()
+            data = data.decode("utf-8")
+            return data
+        except Exception as e:
+            self.logger.error(f"Google Serper檢索失敗: {str(e)}")
+            return None
+        
+    def format_googleserper_search_results(self, text_content):
+        try:
+            # 使用ast.literal_eval安全地評估Python字面量
+            # 這對於處理Python字典和列表字符串非常有用
+            data = ast.literal_eval(text_content)
+            return data
+        except (SyntaxError, ValueError) as e:
+            print(f"解析錯誤: {e}")
+            
+            # 如果ast.literal_eval失敗，嘗試json解析
+            try:
+                # 將單引號替換為雙引號
+                json_str = text_content.replace("'", '"')
+                # 處理可能的特殊字符
+                json_str = json_str.replace('""delete', '"delete')
+                data = json.loads(json_str)
+                return data
+            except json.JSONDecodeError as e:
+                print(f"JSON解析錯誤: {e}")
+                return []
+
+    def generate_content(self, query, internal_content):
+        web_data = self.get_content(query=query)
+        web_data = self.format_googleserper_search_results(content=web_data)
+        llm_ret = self.chain.invoke({"query": query, "web_context":web_data, "internal_context":internal_content},)
+        return llm_ret  
+    
