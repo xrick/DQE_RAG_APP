@@ -21,7 +21,7 @@ from pytablewriter.style import Style
 import re
 from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
 from libs.RAG.LLM.LLMInitializer import LLMInitializer;
-from libs.RAG.Tools.ContentSummarizer import WikiSummarizer
+from web.libs.RAG.Tools.ContentRetriever import WikiSummarizer
 # from openai import AsyncOpenAI
 # import asyncio
 # from libs.base_classes import AssistantRequest, AssistantResponse

@@ -252,12 +252,38 @@ const loadingText = '搜尋中......';
                 console.log("this text var is %s",text);
                 if(text!="nodata"){
                     if(act === 'markdown') {
+                        // 設置marked選項，確保表格正確渲染
+                        marked.setOptions({
+                            gfm: true,
+                            breaks: true,
+                            tables: true,
+                            pedantic: false,
+                            sanitize: false,
+                            smartLists: true,
+                            smartypants: false,
+                            xhtml: false,
+                            headerIds: false,
+                            mangle: false
+                        });
                         // 使用 marked 解析 Markdown
                         // const cleanContent = text.trim();
                         const cleanContent = text.trim()
                         .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
                         .replace(/\|{2,}/g, '|');   // Fix multiple pipe characters
                         contentDiv.innerHTML = marked.parse(cleanContent);
+                        // 為表格添加額外的樣式
+                        const tables = contentDiv.querySelectorAll('table');
+                        tables.forEach(table => {
+                            table.className = 'min-w-full divide-y divide-gray-200 border';
+                            const headers = table.querySelectorAll('th');
+                            headers.forEach(header => {
+                                header.className = 'px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                            });
+                            const cells = table.querySelectorAll('td');
+                            cells.forEach(cell => {
+                                cell.className = 'px-3 py-2 whitespace-normal text-sm text-gray-500';
+                            });
+                        });
                     } else {
                         contentDiv.textContent = text;
                     }

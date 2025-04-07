@@ -107,6 +107,80 @@ def format_googleserper_search_results(text_content):
         except json.JSONDecodeError as e:
             print(f"JSON解析錯誤: {e}")
             return []
+        
+
+'''
+轉換上面format_googleserper_search_results回傳的dict物件
+為markdown格式
+'''
+def format_serper_results_to_markdown(serper_data):
+    """
+    將Google Serper API返回的搜索結果轉換為Markdown格式
+    
+    Args:
+        serper_data (dict): Google Serper API返回的搜索結果字典
+    
+    Returns:
+        str: 格式化後的Markdown字符串
+    """
+    # 檢查必要的鍵是否存在
+    if not serper_data or 'organic' not in serper_data:
+        return "# 搜索結果\n\n無法獲取相關搜索結果。"
+    
+    # 提取查詢關鍵詞
+    query = serper_data.get('searchParameters', {}).get('q', '未知查詢')
+    
+    # 構建Markdown標題
+    markdown = f"## {query} 搜索結果\n\n"
+    
+    # 添加摘要部分
+    markdown += "### 搜索結果摘要\n\n"
+    
+    # 提取前三個結果的關鍵信息，用於生成摘要
+    top_snippets = [item.get('snippet', '') for item in serper_data['organic'][:3] if 'snippet' in item]
+    
+    # 從摘要中提取可能的原因和解決方案
+    causes = []
+    solutions = []
+    
+    for snippet in top_snippets:
+        if '原因' in snippet or '問題' in snippet or '故障' in snippet:
+            causes.append(snippet)
+        if '解決' in snippet or '修復' in snippet or '方法' in snippet:
+            solutions.append(snippet)
+    
+    # 添加可能的原因
+    if causes:
+        markdown += "#### 可能的原因\n"
+        for cause in causes[:3]:  # 限制顯示數量
+            markdown += f"- **{cause[:50]}**{'...' if len(cause) > 50 else ''}\n"
+        markdown += "\n"
+    
+    # 添加可能的解決方案
+    if solutions:
+        markdown += "#### 解決方案\n"
+        for i, solution in enumerate(solutions[:5], 1):  # 限制顯示數量
+            markdown += f"{i}. **{solution[:50]}**{'...' if len(solution) > 50 else ''}\n"
+        markdown += "\n"
+    
+    # 添加詳細搜索結果表格
+    markdown += "### 詳細搜索結果\n\n"
+    markdown += "| 標題 | 摘要 |\n"
+    markdown += "|------|------|\n"
+    
+    # 添加每個搜索結果
+    for item in serper_data['organic'][:10]:  # 限制顯示前10個結果
+        title = item.get('title', '無標題').replace('|', '\\|')  # 轉義表格分隔符
+        snippet = item.get('snippet', '無摘要').replace('|', '\\|').replace('\n', ' ')
+        markdown += f"| {title} | {snippet} |\n"
+    
+    # 添加相關搜索
+    if 'relatedSearches' in serper_data and serper_data['relatedSearches']:
+        markdown += "\n### 相關搜索\n\n"
+        for item in serper_data['relatedSearches']:
+            markdown += f"- {item.get('query', '')}\n"
+    
+    return markdown
 
 
 
