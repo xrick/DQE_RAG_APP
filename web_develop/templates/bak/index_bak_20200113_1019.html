@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 聊天服務</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div class="flex h-screen">
+        <!-- 左側邊欄 -->
+        <aside class="w-64 bg-gray-100 dark:bg-gray-800 p-4">
+            <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200">功能選單</h2>
+            <ul class="mt-4 space-y-2">
+                <li>
+                    <button
+                        onclick="handleServiceClick('chat')"
+                        class="w-full text-left px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600"
+                    >
+                        AI 聊天
+                    </button>
+                </li>
+                <li>
+                    <button
+                        onclick="handleServiceClick('writing')"
+                        class="w-full text-left px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                    >
+                        寫作建議
+                    </button>
+                </li>
+                <li>
+                    <button
+                        onclick="handleServiceClick('ebook')"
+                        class="w-full text-left px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                    >
+                        電子書
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- 主內容區域 -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <div id="root">
+                <p class="text-gray-600 dark:text-gray-300">請選擇左側的功能以繼續。</p>
+            </div>
+        </main>
+    </div>
+
+    <script type="text/javascript">
+        async function handleServiceClick(serviceId) {
+            if (serviceId === 'chat') {
+                try {
+                    // 加載聊天內容
+                    const response = await fetch('/chat-content'); // 假設這個路由返回聊天的 HTML
+                    const content = await response.text();
+                    document.getElementById('root').innerHTML = content;
+
+                    // 動態加載 ai-chat.js
+                    const script = document.createElement('script');
+                    script.src = '/static/js/ai-chat.js'; // 假設 ai-chat.js 的路徑
+                    script.onload = () => {
+                        console.log("ai-chat.js 加載完成");
+                        if (typeof window.initializeChatInterface === 'function') {
+                            console.log("調用 initializeChatInterface...");
+                            window.initializeChatInterface(); // 調用全局函數
+                        } else {
+                            console.error("initializeChatInterface 未定義！");
+                        }
+                    };
+                    script.onerror = () => {
+                        console.error("ai-chat.js 加載失敗！");
+                    };
+                    document.body.appendChild(script);
+                } catch (error) {
+                    console.error('Error loading chat content:', error);
+                }
+            } else if (serviceId === 'writing') {
+                document.getElementById('root').innerHTML = `
+                    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200">寫作建議</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mt-2">此功能尚未實現。</p>
+                `;
+            } else if (serviceId === 'ebook') {
+                document.getElementById('root').innerHTML = `
+                    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200">電子書</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mt-2">此功能尚未實現。</p>
+                `;
+            }
+        }
+
+        // 頁面加載時顯示默認提示
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('root').innerHTML = `
+                <p class="text-gray-600 dark:text-gray-300">請選擇左側的功能以繼續。</p>
+            `;
+        });
+    </script>
+</body>
+</html>

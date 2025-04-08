@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 服務中心</title>
+    
+    <!-- React 18 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div id="root"></div>
+
+    {% raw %}
+    <script type="text/babel">
+        const HomeContent = ({ onServiceClick }) => {
+            const services = [
+                {
+                    icon: "message-circle",
+                    title: "AI聊天",
+                    description: "智能對話與問答服務",
+                    id: "chat"
+                },
+                {
+                    icon: "pen-tool",
+                    title: "寫作建議",
+                    description: "提供專業的寫作建議和內容優化",
+                    id: "writing"
+                },
+                {
+                    icon: "book-open",
+                    title: "規定助手",
+                    description: "快速查詢與理解各項規定",
+                    id: "regulations"
+                },
+                {
+                    icon: "book",
+                    title: "eBook",
+                    description: "電子書籍管理與閱讀系統",
+                    id: "ebook"
+                }
+            ];
+
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {services.map((service, index) => (
+                        <div 
+                            key={index}
+                            onClick={() => onServiceClick(service.id)}
+                            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-6 cursor-pointer transform hover:-translate-y-1"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="p-2 bg-blue-50 dark:bg-blue-900 rounded-lg">
+                                    <i 
+                                        data-lucide={service.icon}
+                                        className="w-6 h-6 text-blue-500 dark:text-blue-300"
+                                    ></i>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold dark:text-white">
+                                        {service.title}
+                                    </h3>
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
+                                        {service.description}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [isDark, setIsDark] = React.useState(
+                window.matchMedia('(prefers-color-scheme: dark)').matches
+            );
+            const [currentView, setCurrentView] = React.useState('home');
+            const [currentContent, setCurrentContent] = React.useState(null);
+
+            const toggleDarkMode = () => {
+                setIsDark(!isDark);
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('darkMode', !isDark);
+            };
+
+            const handleServiceClick = async (serviceId) => {
+                if (serviceId === 'chat') {
+                    try {
+                        const response = await fetch('/ai-chat');
+                        const content = await response.text();
+                        setCurrentContent(content);
+                        setCurrentView('chat');
+                    } catch (error) {
+                        console.error('Error loading chat content:', error);
+                    }
+                }
+            };
+
+            React.useEffect(() => {
+                lucide.createIcons();
+                const savedDarkMode = localStorage.getItem('darkMode');
+                if (savedDarkMode !== null) {
+                    setIsDark(JSON.parse(savedDarkMode));
+                    if (JSON.parse(savedDarkMode)) {
+                        document.documentElement.classList.add('dark');
+                    }
+                }
+            }, []);
+
+            return (
+                <div className="min-h-screen flex">
+                    {/* Sidebar */}
+                    <div className="w-64 bg-white dark:bg-gray-800 shadow-lg">
+                        <div className="p-4">
+                            <div className="flex items-center gap-2">
+                                <i data-lucide="cpu" className="w-8 h-8 text-blue-500"></i>
+                                <h1 className="text-xl font-bold dark:text-white">AI 服務中心</h1>
+                            </div>
+                        </div>
+                        <nav className="mt-4">
+                            <div 
+                                className={`px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${currentView === 'home' ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
+                                onClick={() => setCurrentView('home')}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <i data-lucide="home" className="w-5 h-5"></i>
+                                    <span>首頁</span>
+                                </div>
+                            </div>
+                            <div className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <div className="flex items-center gap-2">
+                                    <i data-lucide="box" className="w-5 h-5"></i>
+                                    <span>模型</span>
+                                </div>
+                            </div>
+                            <div className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <div className="flex items-center gap-2">
+                                    <i data-lucide="history" className="w-5 h-5"></i>
+                                    <span>聊天記錄</span>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1 flex flex-col">
+                        <header className="bg-white dark:bg-gray-800 shadow-sm p-4">
+                            <div className="flex justify-end">
+                                <button 
+                                    onClick={toggleDarkMode}
+                                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                    <i 
+                                        data-lucide={isDark ? "sun" : "moon"} 
+                                        className="w-5 h-5 text-gray-600 dark:text-gray-300"
+                                    ></i>
+                                </button>
+                            </div>
+                        </header>
+
+                        <main className="flex-1 p-6">
+                            {currentView === 'home' ? (
+                                <HomeContent onServiceClick={handleServiceClick} />
+                            ) : (
+                                <div id="dynamic-content" dangerouslySetInnerHTML={{ __html: currentContent }} />
+                            )}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+    <!-- Add this before the closing </body> tag -->
+    <script src="/static/js/ai-chat.js"></script>
+
+    {% endraw %}
+</body>
+</html>

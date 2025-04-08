@@ -1,0 +1,21 @@
+Minoca Response:
+
+2025/01/09:
+
+Now when you open this page:
+
+Open your browser's Developer Tools (F12)
+Go to the Console tab
+You should see initial logs like:
+"DOM loaded, initializing..."
+"Message input found"
+"Send button found"
+"Initializing chat..."
+"Thread created successfully: [thread-id]"
+When you try to send a message, you should see logs like:
+
+"Send button clicked" or "Enter key pressed"
+"Attempting to send message: [your message]"
+"Creating EventSource with threadId: [thread-id]"
+"EventSource URL: [url]"
+Please try this updated version and let me know what logs you see in the console. This will help us identify exactly where the process might be failing.

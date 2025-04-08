@@ -1,0 +1,37 @@
+Change-Log 2025/01/09
+
+Project Structure 2025/01/09-12:25
+.
+├── .env (with OPENAI_API_KEY)
+├── main.py
+├── app/
+│   └── ai_chat_service.py
+├── templates/
+│   ├── index.html
+│   └── ai-chat.html
+└── static/
+
+app/ai_chat_service.py
+	Removed async/await syntax
+	Replaced Assistants API with Chat Completions API
+	Simplified thread management with UUID
+	Implemented in-memory message history
+	Updated the streaming response format
+	file back and new: 
+	back: ai_chat_service_bak_202501091005.py
+	new: ai_chat_service.py
+
+main.py
+test start: uvicorn main:app --reload	
+Key changes made:
+	Simplified the chat_message endpoint to directly use the generate method's StreamingResponse
+	Added new endpoints for run status and cancellation
+	Cleaned up imports and removed commented-out code
+	Maintained proper error handling across all endpoints
+	Kept the async/await pattern consistent throughout
+
+The main differences from the previous version:
+	Removed the custom event_generator in chat_message since AIChatService.generate() now handles streaming directly
+	Added new endpoints /api/chat/status/{thread_id} and /api/chat/cancel/{thread_id}
+	Improved error handling consistency
+	Removed redundant comments and unused code

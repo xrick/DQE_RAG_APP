@@ -1,0 +1,41 @@
+<!-- File: templates/k9_helper/content.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<body>
+<div id="chat-section" class="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
+    <header class="p-4 bg-blue-600 text-white text-center font-bold text-lg shadow-md">
+        K9商城小幫手
+    </header>
+
+    <div
+        id="chat-container"
+        class="flex-1 overflow-y-auto p-4 bg-white dark:bg-gray-800 rounded-lg shadow-inner space-y-4"
+    >
+        <!-- 動態插入消息 -->
+        <div class="bg-gray-100 p-4 rounded-lg dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+            歡迎使用K9商城小幫手！我可以幫您：
+            • 解答商品相關問題
+            • 提供購物建議
+            • 協助訂單查詢
+            • 解決購物疑難
+        </div>
+    </div>
+
+    <div id="input-area" class="p-4 bg-gray-200 dark:bg-gray-700 flex items-center gap-2 shadow-md sticky bottom-0">
+        <input
+            type="text"
+            id="message-input"
+            placeholder="請描述您的購物問題..."
+            class="flex-1 p-3 border border-gray-300 rounded-full"
+        >
+        <button
+            id="send-button"
+            class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-full"
+        >
+            詢問
+        </button>
+    </div>
+</div>
+</body>
+</html>
+    

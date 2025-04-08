@@ -21,8 +21,7 @@ from pytablewriter.style import Style
 import re
 from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
 from libs.RAG.LLM.LLMInitializer import LLMInitializer;
-from libs.RAG.Tools.ContentRetriever import GoogleSerperRetriever
-from libs.utils.text_processing import format_serper_results_to_markdown
+from web.libs.RAG.Tools.ContentRetriever import WikiSummarizer
 # from openai import AsyncOpenAI
 # import asyncio
 # from libs.base_classes import AssistantRequest, AssistantResponse
@@ -56,8 +55,8 @@ LLM_MODEL='phi4:latest';
 llm=None;
 
 # stackexchange = StackExchangeAPIWrapper(result_separator='\n\n')
-# googleserper = http.client.HTTPSConnection("google.serper.dev")
-# SERPER_KEY = "3026422e86bf19796a06b5f15433e9c0cd9bd88a"
+googleserper = http.client.HTTPSConnection("google.serper.dev")
+SERPER_KEY = "3026422e86bf19796a06b5f15433e9c0cd9bd88a"
 
 # 加載環境變數
 load_dotenv()
@@ -92,11 +91,11 @@ required_columns = [
 
 """ stackexchange return messages clean and format"""
 def clean_text(text):
-    # 移除所有 HTML 標籤（包括 span class="highlight"）
-    text = re.sub(r'<[^>]+>', '', text)
-    # 解碼 HTML 特殊符號
-    text = html.unescape(text)
-    return text.strip()
+    #    移除所有 HTML 標籤（包括 span class="highlight"）
+        text = re.sub(r'<[^>]+>', '', text)
+        # 解碼 HTML 特殊符號
+        text = html.unescape(text)
+        return text.strip()
 
 def format_qa_content(content:str=None):  
     # 分割問題塊
@@ -115,7 +114,15 @@ def format_qa_content(content:str=None):
     return final_content
 
 '''funtions for formatting content from google serper api'''
-
+def format_context_to_md(context):
+    """智能Markdown生成器（支持多类型内容识别与自动格式化）
+    
+    参数:
+        context (str): 包含标题、链接、描述的原始文本
+        
+    返回:
+        str: 结构化Markdown文档，含自动生成的目录锚点
+    """
 
 #check the is the text only contain english
 def is_english(text):
@@ -139,6 +146,24 @@ def sanitize_text(text):
     text = ' '.join(text.split())
     return text
 
+# def sanitize_text(text):
+#     if pd.isna(text):
+#         return ""
+#     text = str(text).strip()
+    
+#     # Escape special characters that could break markdown tables
+#     escape_chars = {
+#         '|': '\\|',
+#         '\n': '<br>',
+#         '\r': '',
+#         '_': '\\_',
+#         '*': '\\*'
+#     }
+#     for char, replacement in escape_chars.items():
+#         text = text.replace(char, replacement)
+#     # Remove multiple spaces
+#     text = ' '.join(text.split())
+#     return text
 
 def search_similar_questions(retriever, question):
     pos, distances = retriever(question)
@@ -418,6 +443,7 @@ async def api_ai_chat(request: Request):
     """
     edit note:
     2025/04/02:
+
     """
     # try:
     data = await request.json()
@@ -426,7 +452,7 @@ async def api_ai_chat(request: Request):
     print(f"---------------search_action:{search_action}--------------");
     print(f"---------------search_threshold:{search_threshold}--------------");
     message = data.get("message")
-    ret_data = None
+    filtered_summary = None
     chk_ifnodata = "ragsearch"
     _poses = []
     _dists = []
@@ -472,16 +498,21 @@ async def api_ai_chat(request: Request):
             chk_ifnodata="nodata";
     else:
         if search_action == 3:
+            
             try:
-                # 
-                google_serper = GoogleSerperRetriever(llm)
+                # 初始化deepseek-r1:7b模型
+                # llm = llm_init.init_ollama_model(
+                #     model="deepseek-r1:7b",
+                #     temperature=0.7
+                # )
+                
+                # 創建摘要器並使用
+                wiki_summarizer = WikiSummarizer(llm)
                 query = replace_chinese_punctuation(message);
-                # summary = wiki_summarizer.summarize(query).replace("Abstract:","摘要：").replace("Summarization Content:","内容概要：").replace("a. Most Important Points:","一、重点说明：").replace("b. Extended Content:","二、延伸内容：")
-                # filtered_summary = summary[summary.find("</think>")+8:]
-                ret_data = google_serper.perform_query(query=query)
-                print(f"轉換為markdown前..........\n查詢內容：{query}\n回傳結果:\n{ret_data}")
-                ret_data = format_serper_results_to_markdown(serper_data=ret_data)
-                print(f"\n轉換為markdown後..........\n查詢內容：{query}\n回傳結果:\n{ret_data}")
+                summary = wiki_summarizer.summarize(query).replace("Abstract:","摘要：").replace("Summarization Content:","内容概要：").replace("a. Most Important Points:","一、重点说明：").replace("b. Extended Content:","二、延伸内容：")
+                filtered_summary = summary[summary.find("</think>")+8:]
+                 
+                # print(f"查詢內容：{query}\n回傳結果:\n{filtered_summary}")
                 
             except Exception as e:
                 print(f"Error: {str(e)}")
@@ -496,7 +527,7 @@ async def api_ai_chat(request: Request):
                 ai_response = await generate_multirows(message=message, data_frame=dfObj_aitrial, data_pos=_poses, search_distances=_dists, search_action=search_action)
             else:
                 ai_response = {
-                    'primary_msg':ret_data,
+                    'primary_msg':filtered_summary,
                     'status_code':200
                 }
         else:
