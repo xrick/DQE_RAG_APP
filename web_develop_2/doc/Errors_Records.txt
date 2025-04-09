@@ -1,0 +1,7 @@
+Errors Records:
+
+2025/01/9:
+ai-chat.html
+(索引):1 Uncaught ReferenceError: sendMessage is not defined
+    at HTMLButtonElement.onclick ((索引):1:1)
+onclick @   (索引):1

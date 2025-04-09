@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR 服務</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .ocr-container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          height: 100vh;
+      }
+      .upload-section {
+          padding: 20px;
+          border-right: 1px solid #e0e0e0;
+          overflow-y: auto;
+      }
+      .preview-container {
+          width: 100%;
+          height: 800px;  /* Increased height */
+          margin-top: 20px;
+          border: 1px solid #e0e0e0;
+          background-color: #f9f9f9;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          overflow: hidden;
+          position: relative;
+      }
+      #preview-area {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+          transition: all 0.3s ease;
+      }
+      #pdf-preview {
+          width: 100%;
+          height: 100%;
+          border: none;
+      }
+      #preview-placeholder {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          text-align: center;
+          color: #888;
+      }
+  </style>
+</head>
+<body>
+    <div class="ocr-container">
+        <!-- 左側：上傳與預覽區域 -->
+        <div class="upload-section">
+            <div class="mb-4">
+                <h2 class="text-xl font-bold mb-4">OCR 文件上傳</h2>
+                
+                <!-- 文件上傳按鈕區 -->
+                <div class="flex space-x-2 mb-4">
+                    <input 
+                        type="file" 
+                        id="file-input" 
+                        accept=".jpg,.jpeg,.png,.pdf" 
+                        class="hidden"
+                    >
+                    <button 
+                        id="browse-btn" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                    >
+                        <i class="fas fa-upload mr-2"></i>上傳
+                    </button>
+                    <button 
+                        id="do-ocr-btn" 
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                    >
+                        <i class="fas fa-magic mr-2"></i>OCR服務
+                    </button>
+                </div>
+
+                <!-- 文件資訊顯示 -->
+                <div class="mb-4">
+                    <p id="file-info" class="text-gray-600">尚未選擇文件</p>
+                </div>
+
+                <!-- 預覽區域 -->
+                <div class="preview-container">
+                    <div id="preview-placeholder" class="text-center text-gray-400">
+                        <i class="fas fa-file-upload text-4xl mb-2"></i>
+                        <p>請上傳文件以預覽</p>
+                    </div>
+                    <img 
+                        id="preview-area" 
+                        class="hidden" 
+                        alt="文件預覽"
+                    />
+                    <iframe 
+                        id="pdf-preview" 
+                        class="hidden" 
+                        frameborder="0"
+                    ></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：OCR結果區域 -->
+        <div class="result-section">
+            <h2 class="text-xl font-bold mb-4">OCR 辨識結果</h2>
+            
+            <div class="bg-gray-100 p-4 rounded">
+                <textarea 
+                    id="ocr-result" 
+                    class="w-full h-96 border p-2 rounded"
+                    placeholder="OCR 辨識結果將顯示在此"
+                    readonly
+                ></textarea>
+            </div>
+
+            <div class="mt-4 flex space-x-2">
+                <button 
+                    id="copy-btn" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                >
+                    <i class="fas fa-copy mr-2"></i>複製結果
+                </button>
+                <button 
+                    id="edit-btn" 
+                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                >
+                    <i class="fas fa-edit mr-2"></i>編輯結果
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="ocr_page.js"></script>
+</body>
+</html>

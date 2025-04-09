@@ -1,0 +1,15 @@
+please generate an upload image and pdf html page for me, the requiremnets are as following
+1. the name of html page is ocr_page
+2. there are two sections in the ocr_page.html: upper and lower parts
+3. upper part occupy 80% of the ocr_page and lower occupy 20% of the ocr_page.
+4. in the lower part there are one txt field and two button on the button of the page
+5. the txt field is used to show the name of uploaded file name
+6. the two buttons are [browser] and [upload]
+7. when user click [browser] button, the defult file select ui will show.
+8. when user click [upload] button, the selected file starts to upload.
+9. there is a progress bar on the top of the txt field to indicate current upload progress.
+10. when upload finished, the txt field will show the uploaded file name.
+11. There is a button named [do ocr] in the button of upper part and there is a rich-text field above the [do ocr] button.
+12. after a image or a pdf are uploaded, the user will click the [do ocr] button to start ocr service on the uploaded file.
+13. when users click the [do ocr] button, the page needs to check whether a file is uploaded.
+14. please create a upload_tmp folder to save the uploaded file.

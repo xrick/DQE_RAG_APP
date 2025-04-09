@@ -1,0 +1,16 @@
+I am working on a ocr-llm web application, the current status is a as following:
+1. I have implemented several files:
+    1.1. index.html:
+           - The main interface of the web application.
+           - it contains two parts: left-side-bar and right main page-holder
+           - there are three items on the left-side-bar:[home], [models], [chat-history]
+           - the content of [home] will be shown on the right page-holder.
+           - the content of [home] is a block-based selection menu, currently has five blocks.
+           - each block stands for a llm-agent.
+           - currently there are <AI聊天>, <寫作建議>, <規範管理>, <eBook>, and <作文OCR服務>
+    1.2. main.py:
+           - The main app entry point and rounter logic.
+    1.3. ocr_page.html:
+           - ocr service main page.
+    1.4. ocr_page.js
+           - javascript for ocr_page.html

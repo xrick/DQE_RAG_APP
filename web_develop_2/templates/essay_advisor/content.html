@@ -1,0 +1,40 @@
+<!-- File: templates/essay_advisor/content.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<body>
+<div id="chat-section" class="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
+    <header class="p-4 bg-blue-600 text-white text-center font-bold text-lg shadow-md">
+        論文寫作助手
+    </header>
+
+    <div
+        id="essay-advisor-container"
+        class="flex-1 overflow-y-auto p-4 bg-white dark:bg-gray-800 rounded-lg shadow-inner space-y-4"
+    >
+        <!-- 動態插入消息 -->
+        <div class="bg-gray-100 p-4 rounded-lg dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+            歡迎使用論文寫作助手！我可以幫您：
+            • 改進論文結構
+            • 優化寫作表達
+            • 檢查學術用語
+            • 提供寫作建議
+        </div>
+    </div>
+
+    <div id="input-area" class="p-4 bg-gray-200 dark:bg-gray-700 flex items-center gap-2 shadow-md sticky bottom-0">
+        <input
+            type="text"
+            id="message-input"
+            placeholder="請輸入您的論文相關問題..."
+            class="flex-1 p-3 border border-gray-300 rounded-full"
+        >
+        <button
+            id="send-button"
+            class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-full"
+        >
+            諮詢
+        </button>
+    </div>
+</div>
+</body>
+</html>
