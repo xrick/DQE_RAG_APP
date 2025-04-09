@@ -2,7 +2,8 @@ import dspy
 import faiss
 from sentence_transformers import SentenceTransformer
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS as LangchainFAISS
+# from langchain.vectorstores import FAISS as LangchainFAISS
+from langchain.vectorstores import FAISS
 import numpy as np
 
 class CustomFAISSRetriever(dspy.Retrieve):
@@ -40,7 +41,7 @@ class CustomFAISSRetriever(dspy.Retrieve):
         # try:
         if local_db_path=="nodata":
             return "nodata";
-        db = LangchainFAISS.load_local(
+        db = FAISS.load_local(
             folder_path=local_db_path,
             embeddings=embeddings,
             allow_dangerous_deserialization=True

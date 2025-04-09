@@ -1,5 +1,6 @@
 import os
-import dspy
+# import dspy
+from contextlib import asynccontextmanager
 from typing import List, Dict, AsyncGenerator
 from fastapi import FastAPI, Request, HTTPException,File, UploadFile
 from fastapi.templating import Jinja2Templates
@@ -21,8 +22,9 @@ from pytablewriter.style import Style
 import re
 from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
 from libs.RAG.LLM.LLMInitializer import LLMInitializer;
-from libs.RAG.Tools.ContentRetriever import GoogleSerperRetriever
+from libs.RAG.Tools.ContentRetriever import GoogleSerperRetriever, CompositiveGoogleSerperSummarizer
 from libs.utils.text_processing import format_serper_results_to_markdown
+from time import time
 # from openai import AsyncOpenAI
 # import asyncio
 # from libs.base_classes import AssistantRequest, AssistantResponse
@@ -38,7 +40,103 @@ logging.basicConfig(
 ##########################################
 # 初始化FastAPI應用及其它程式起始需要初始的程式碼
 ##########################################
-app = FastAPI()
+
+'''
+start of fastapi startup: lifespan
+'''
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 全局變量
+    global faiss_retriever, faiss_retriever_qsrc, faiss_retriever_module, dfObj, dfObj_aitrial, llm
+    
+    try:
+        logging.info("開始初始化服務...")
+
+        # 初始化 FAISS 檢索器
+        faiss_retriever = CustomFAISSRetriever(
+            faiss_index_path=faiss_index_path,
+            vector_db_path="nodata",
+            model_name=encoding_model_name,
+            k=retrieval_num,
+        )
+        logging.info("faiss_retriever 初始化成功")
+
+        faiss_retriever_qsrc = CustomFAISSRetriever(
+            faiss_index_path=faiss_index_path_qsr,
+            vector_db_path="nodata",
+            model_name=encoding_model_name,
+            k=retrieval_num,
+        )
+        logging.info("faiss_retriever_qsrc 初始化成功")
+
+        faiss_retriever_module = CustomFAISSRetriever(
+            faiss_index_path=faiss_index_path_module,
+            vector_db_path="nodata",
+            model_name=encoding_model_name,
+            k=retrieval_num,
+        )
+        logging.info("faiss_retriever_module 初始化成功")
+
+        # 加載 CSV 數據
+        dfObj = pd.read_csv(datasrc_deqlearn, encoding='utf-8-sig')
+        logging.info("dfObj 初始化成功")
+
+        dfObj_aitrial = pd.read_csv(datasrc_deqaitrial, encoding='utf-8-sig')
+        logging.info("dfObj_aitrial 初始化成功")
+
+        # 初始化 LLM 模型
+        llm = LLMInitializer().init_ollama_model()
+        logging.info("llm 初始化成功")
+
+        logging.info("Maple-Leaf AI KB 服務初始化完成")
+        
+        yield  # 應用啟動後，繼續執行其餘邏輯
+
+    except Exception as e:
+        logging.error(f"初始化過程中出錯: {e}")
+        raise RuntimeError(f"初始化失敗: {e}")
+    finally:
+        # 如果需要，可以在這裡添加清理邏輯
+        logging.info("應用即將關閉，清理資源...")
+
+'''
+end of lifespan
+'''
+app = FastAPI(lifespan=lifespan)
+
+# @app.on_event("startup")
+# async def startup_event():
+#     # global ai_chat_service
+#     global faiss_retriever;
+#     global faiss_retriever_qsrc;
+#     global faiss_retriever_module;
+#     global dfObj;
+#     global dfObj_aitrial;
+#     global llm;
+#     try:
+#         logging.info("start to initialize services.......");
+#         # ai_chat_service = AIChatService(); # 初始化 KB聊天物件
+#         # print(f"vector db path: {vector_db_path}");
+#         faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path="nodata", model_name=encoding_model_name, k=retrieval_num); # 初始化 faiss 檢索物件
+#         logging.info("faiss_retriever initializing succeed........");
+#         faiss_retriever_qsrc = CustomFAISSRetriever(faiss_index_path=faiss_index_path_qsr,
+#                                                     vector_db_path="nodata",model_name=encoding_model_name,k=retrieval_num);
+#         logging.info("faiss_retriever_qsrc initializing succeed........");
+#         faiss_retriever_module = CustomFAISSRetriever(faiss_index_path=faiss_index_path_module,
+#                                                     vector_db_path="nodata",model_name=encoding_model_name,k=retrieval_num);
+#         logging.info("faiss_retriever_module initializing succeed........");
+#         dfObj = pd.read_csv(datasrc_deqlearn, encoding='utf-8-sig'); # 初始化 faiss 檢索物件
+#         logging.info("dfObj initialized succeed........");
+#         dfObj_aitrial = pd.read_csv(datasrc_deqaitrial, encoding='utf-8-sig');
+#         logging.info("dfObj_aitrial initialized succeed........");
+#         llm = LLMInitializer().init_ollama_model()
+#         logging.info("llm initialized succeed........");
+
+#         # 初始化助手服務管理器
+#         logging.info("Maple-Leaf AI KB Services Initialized...");
+#     except Exception as e:
+#         logging.error(f"Failed to run in startup_event: {e}");
+#         raise RuntimeError(f"Failed to initialize AIChatService: {e}")
 
 # CORS 設置
 app.add_middleware(
@@ -52,8 +150,8 @@ app.add_middleware(
 templates = Jinja2Templates(directory="templates")
 # 設置靜態文件目錄
 app.mount("/static", StaticFiles(directory="static"), name="static")
-LLM_MODEL='phi4:latest';
-llm=None;
+LLM_MODEL='deepseek-r1:7b'#'phi4:latest';
+# llm=None;
 
 # stackexchange = StackExchangeAPIWrapper(result_separator='\n\n')
 # googleserper = http.client.HTTPSConnection("google.serper.dev")
@@ -164,42 +262,6 @@ def generate_markdown_table(headers, value_matrix):
     )
     return writer.dumps()
 
-"""======================Generation of Single-Rows======================"""
-async def generate(message: str = None, submessages: dict = None, history: List[Dict[str, str]] = None, model: str = "deepseekv2", search_action: int = 1) -> str:
-    # global stackexchange;
-    # global googleserper;
-    # global SERPER_KEY;
-    # 精準搜尋邏輯
-    print("................執行精準搜尋................")
-    if message is None:
-        raise ValueError("query string is none, please input query string.")
-    # try:
-    # 清理所有輸入數據
-    cleaned_messages = {
-        k: sanitize_text(v) for k, v in submessages.items()
-    }
-    print(f"cleaned_messages:\n{cleaned_messages}\n\n==================================================\n\n")
-
-    headers=["模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
-    value_matrix = [
-        [v for v in cleaned_messages.values()]
-    ]
-    # print(value_matrix[0])
-   
-    ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
-    print(f"ret_md_table:\n{ret_md_table}");
-
-    """make responses and return"""
-    ret_dict = {
-        'primary_msg':ret_md_table,
-        # 'stackexchangemsg': format_response,
-        # 'googleserper': gs_responses,
-        'status_code':200
-    }
-    return ret_dict       
-
-#     except Exception as e:
-#         raise RuntimeError(f"Error : {str(e)}")
 
 def convert_dr_to_list(row):
     global required_columns;
@@ -246,31 +308,35 @@ def convert_df_to_list(df, pos_list)->List:
     return result_list
 
 """======================Generation of Multi-Rows======================"""
-async def generate_multirows(message: str = None, data_frame:pd.DataFrame = None,  data_pos:List=None, search_distances:List=None, history: List[Dict[str, str]] = None, model: str = "deepseek-r1", search_action: int = 2) -> str:
+async def generate_content(message: str = None, data_frame:pd.DataFrame = None,  data_pos:List=None, search_distances:List=None, history: List[Dict[str, str]] = None, model: str = "deepseek-r1", search_action: int = 2) -> str:
     if message is None:
         raise ValueError("query string is none, please input query string.")
     
     value_matrix = convert_df_to_list(data_frame, data_pos)
-    for j in range(len(search_distances)):
-        dist = search_distances[j]
-        related_degree = "";
-        if dist < 5 and dist >= 0:
-            related_degree = "高<br>"+str(dist)
-        elif dist< 11 and dist > 5:
-            related_degree = "中<br>"+str(dist)
-        else:
-            related_degree = "低<br>"+str(dist)
-        value_matrix[j] = [related_degree]+value_matrix[j]
+    #以下產生關聯度
+    # for j in range(len(search_distances)):
+    #     dist = search_distances[j]
+    #     related_degree = "";
+    #     if dist < 5 and dist >= 0:
+    #         related_degree = "高<br>"#+str(dist)
+    #     elif dist< 11 and dist > 5:
+    #         related_degree = "中<br>"#+str(dist)
+    #     else:
+    #         related_degree = "低<br>"#+str(dist)
+    #     value_matrix[j] = [related_degree]+value_matrix[j]
 
     # 產生markdown table
     # headers=["關聯度","模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
     headers=["關聯度","模块", "严重度(A/B/C)", "题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
-    ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
-        # ret_md_table[j] = ret_md_table[0][j].insert(0, related_degree)
-    print(f"ret_md_table:\n{ret_md_table}");
+    # ret_md_table = generate_markdown_table(headers=headers, value_matrix=value_matrix);
+    #進行與外部搜尋資料整合
+    summaryObj = CompositiveGoogleSerperSummarizer(llm=llm)
+    gen_data = summaryObj.generate_content(query=message, internal_content=value_matrix)
+    print(f"整合後未去除推理資料:\n{gen_data}");
+    gen_data = gen_data[gen_data.index("</think>"):]
     """make responses and return"""
     ret_dict = {
-        'primary_msg':ret_md_table,
+        'primary_msg':gen_data,
         # 'stackexchangemsg': format_response,
         # 'googleserper': gs_responses,
         'status_code':200
@@ -279,39 +345,6 @@ async def generate_multirows(message: str = None, data_frame:pd.DataFrame = None
     
 
 
-@app.on_event("startup")
-async def startup_event():
-    # global ai_chat_service
-    global faiss_retriever;
-    global faiss_retriever_qsrc;
-    global faiss_retriever_module;
-    global dfObj;
-    global dfObj_aitrial;
-    global llm;
-    try:
-        logging.info("start to initialize services.......");
-        # ai_chat_service = AIChatService(); # 初始化 KB聊天物件
-        # print(f"vector db path: {vector_db_path}");
-        faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path="nodata", model_name=encoding_model_name, k=retrieval_num); # 初始化 faiss 檢索物件
-        logging.info("faiss_retriever initializing succeed........");
-        faiss_retriever_qsrc = CustomFAISSRetriever(faiss_index_path=faiss_index_path_qsr,
-                                                    vector_db_path="nodata",model_name=encoding_model_name,k=retrieval_num);
-        logging.info("faiss_retriever_qsrc initializing succeed........");
-        faiss_retriever_module = CustomFAISSRetriever(faiss_index_path=faiss_index_path_module,
-                                                    vector_db_path="nodata",model_name=encoding_model_name,k=retrieval_num);
-        logging.info("faiss_retriever_module initializing succeed........");
-        dfObj = pd.read_csv(datasrc_deqlearn, encoding='utf-8-sig'); # 初始化 faiss 檢索物件
-        logging.info("dfObj initialized succeed........");
-        dfObj_aitrial = pd.read_csv(datasrc_deqaitrial, encoding='utf-8-sig');
-        logging.info("dfObj_aitrial initialized succeed........");
-        llm = LLMInitializer().init_ollama_model()
-        logging.info("llm initialized succeed........");
-
-        # 初始化助手服務管理器
-        logging.info("Maple-Leaf AI KB Services Initialized...");
-    except Exception as e:
-        logging.error(f"Failed to run in startup_event: {e}");
-        raise RuntimeError(f"Failed to initialize AIChatService: {e}")
 
 # 根路由：渲染首頁
 @app.get("/", response_class=HTMLResponse)
@@ -412,6 +445,12 @@ def sort_list_pair(pos_list:List=None, dist_list:List=None):
     dist_list_sorted = list(dist_list_sorted)
     return pos_list_sorted, dist_list_sorted
 
+def do_google_serper_search(query:str=None)->str:
+    google_serper = GoogleSerperRetriever(llm)
+    _query = replace_chinese_punctuation(query);
+    ret_data = google_serper.perform_query(query=_query)
+    return ret_data
+
 # AI 聊天接口（非流式）
 @app.post("/api/ai-chat")
 async def api_ai_chat(request: Request):
@@ -420,9 +459,10 @@ async def api_ai_chat(request: Request):
     2025/04/02:
     """
     # try:
+    start_time=time()
     data = await request.json()
     search_action = int(data.get("search_action"))  # 預設為精準搜尋
-    search_threshold = float(data.get("search_threshold", 15.0))  # 新增參數接收
+    search_threshold = float(data.get("search_threshold", 25.0))  # 新增參數接收
     print(f"---------------search_action:{search_action}--------------");
     print(f"---------------search_threshold:{search_threshold}--------------");
     message = data.get("message")
@@ -473,15 +513,15 @@ async def api_ai_chat(request: Request):
     else:
         if search_action == 3:
             try:
-                # 
-                google_serper = GoogleSerperRetriever(llm)
-                query = replace_chinese_punctuation(message);
-                # summary = wiki_summarizer.summarize(query).replace("Abstract:","摘要：").replace("Summarization Content:","内容概要：").replace("a. Most Important Points:","一、重点说明：").replace("b. Extended Content:","二、延伸内容：")
-                # filtered_summary = summary[summary.find("</think>")+8:]
-                ret_data = google_serper.perform_query(query=query)
-                print(f"轉換為markdown前..........\n查詢內容：{query}\n回傳結果:\n{ret_data}")
+                #web search
+                #以下三行移至do_google_serper_search
+                # google_serper = GoogleSerperRetriever(llm)
+                # query = replace_chinese_punctuation(message);
+                # ret_data = google_serper.perform_query(query=query)
+                ret_data = do_google_serper_search(query=message)
+                print(f"轉換為markdown前..........\n查詢內容：{message}\n回傳結果:\n{ret_data}")
                 ret_data = format_serper_results_to_markdown(serper_data=ret_data)
-                print(f"\n轉換為markdown後..........\n查詢內容：{query}\n回傳結果:\n{ret_data}")
+                print(f"\n轉換為markdown後..........\n查詢內容：{message}\n回傳結果:\n{ret_data}")
                 
             except Exception as e:
                 print(f"Error: {str(e)}")
@@ -491,9 +531,9 @@ async def api_ai_chat(request: Request):
     if search_action != 99:
         if chk_ifnodata != "nodata":
             if search_action == 1:
-                ai_response = await generate_multirows(message=message, data_frame=dfObj, data_pos=_poses, search_distances=_dists, search_action=search_action);
+                ai_response = await generate_content(message=message, data_frame=dfObj, data_pos=_poses, search_distances=_dists, search_action=search_action);
             elif search_action == 2:
-                ai_response = await generate_multirows(message=message, data_frame=dfObj_aitrial, data_pos=_poses, search_distances=_dists, search_action=search_action)
+                ai_response = await generate_content(message=message, data_frame=dfObj_aitrial, data_pos=_poses, search_distances=_dists, search_action=search_action)
             else:
                 ai_response = {
                     'primary_msg':ret_data,
@@ -505,6 +545,10 @@ async def api_ai_chat(request: Request):
                 'status_code':200
             }
     # 返回 AI 的回應
+    end_time=time()
+    totaltime = end_time-start_time
+    logging.info(f"查詢耗時:{totaltime}")
+    ai_response["computation_time"]=totaltime
     return {"response": ai_response}; 
     # except Exception as e:
     #     raise HTTPException(status_code=500, detail=str(e))

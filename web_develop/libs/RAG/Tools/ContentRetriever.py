@@ -16,8 +16,6 @@ class WebContentRetriever(ABC):
         self.logger = logging.getLogger(__name__)
         self.llm = llm
         self.template = None
-        
-        # self.chain = LLMChain(prompt=self.prompt, llm=self.llm, verbose=False, return_final_only=True)
     
     @abstractmethod
     def get_content(self, query: str) -> Optional[str]:
@@ -158,24 +156,51 @@ class CompositiveGoogleSerperSummarizer(GoogleSerperRetriever):
         }
         self.query=None
         self.template='''
-            角色:你是一個資深且經驗豐富的RAG Developer, 也是一個有良好技術的自然語言處理工程師.
-            任務:
-            1.現在有使用者輸入及二類資料：
-                a.使用者輸入:
-                  {query}
-                b.外部參考資料:
-                  {web_context}
-                c.內部資料:內容資料是依據使用者的輸入向內部資料庫進行搜尋所取得的資料.
-                  {internal_context}
-            2.請依照上述完成以下需求:
-                a.請先逐步思考使用者輸入
-                b.再依照外部參考資料及內部資料,產生一篇摘要.
-                c.這篇摘要是以使用者輸入為主題及重心.
-                d.這篇摘要的結構包含:
-                    - 摘要主題
-                    - 摘要內容
-                    - 延伸內容
-                e.請輸出為表格式的、易讀及美觀的markdown內容
+            # 角色
+            **資深BIOS韌體開發工程師**
+
+            # 任務說明
+            ## 輸入資料來源
+            1. **使用者輸入**  
+            `{query}`
+
+            2. **外部參考資料**  
+            `{web_context}`(基於網路搜尋資料)
+
+            3. **內部資料庫**  
+            `{internal_context}`(基於使用者輸入檢索的內部技術文檔)
+
+            ## 處理流程
+            ### 步驟1:問題分析
+            1. 解構使用者需求  
+            - 識別技術關鍵字(如UEFI、ACPI、SMBIOS等)
+            - 判斷問題類型（兼容性/安全性/效能調優）
+
+            ### 步驟2:資料整合
+            1. 交叉比對來源  
+            - 外部資料（網路資料/業界標準/技術白皮書）
+            - 內部資料（歷史案例/企業規範）
+
+            ### 步驟3:摘要生成
+            #### 表格格式規範
+
+            項目      內容說明
+            摘要問題  [清晰描述技術問題核心]
+            摘要內容  [整合解決方案與技術依據]
+            延伸內容  [相關模組影響分析/版本相容性建議]
+
+
+            #### 附加要求
+            - 若外部資料含「相關搜尋」內容，按此格式追加：  
+            **相關技術參考**:  
+            `• [搜尋項目1]`  
+            `• [搜尋項目2]`
+
+            # 輸出規範
+            1. **語言**: 嚴格使用簡體中文
+            2. **格式**:  
+            - 禁用無序列表，優先使用表格
+            - 技術參數需用`行內代碼`標示（例：`0xE3`寄存器）
         '''
         self.prompt = PromptTemplate(
             input_variables=["query","web_context","internal_context"],
@@ -225,7 +250,7 @@ class CompositiveGoogleSerperSummarizer(GoogleSerperRetriever):
 
     def generate_content(self, query, internal_content):
         web_data = self.get_content(query=query)
-        web_data = self.format_googleserper_search_results(content=web_data)
+        web_data = self.format_googleserper_search_results(text_content=web_data)
         llm_ret = self.chain.invoke({"query": query, "web_context":web_data, "internal_context":internal_content},)
         return llm_ret  
     

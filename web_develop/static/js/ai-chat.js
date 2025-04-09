@@ -6,12 +6,11 @@ const loadingText = '搜尋中......';
 
 (function () {
     console.log("ai-chat.js 加載完成！");
-    console.log("it has invoke！");
 
     // 添加搜尋模式變數和控制邏輯
     let search_action = 1; // 預設為精準搜尋
     // 定義初始化聊天介面的函數
-    let search_threshold = 15;
+    let search_threshold = 25;
     function initializeSearchButtons() {
         const preciseButton = document.getElementById('precise-search');
         const tagButton = document.getElementById('tag-search');
@@ -195,7 +194,8 @@ const loadingText = '搜尋中......';
             if (data && data.response) {
                 // appendMessage("ai", `${JSON.stringify(data.response)}`);
                 // console.log(data.response['primary_msg'])
-                appendMessage("ai:", data.response['primary_msg'],'markdown')
+                appendMessage("DQE-AI:", data.response['primary_msg'],'markdown')
+                appendMessage("總共耗時:", data.response['totaltime'],'markdown')
                 // appendMessage("similar questions:", data.response['googleserper'],'markdown')
                 // appendMessage("similar questions:", data.response['googleserper'],'puretxt')
             } else {
