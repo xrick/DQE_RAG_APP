@@ -441,10 +441,12 @@ def sort_list_pair(pos_list:List=None, dist_list:List=None):
     dist_list_sorted = list(dist_list_sorted)
     return pos_list_sorted, dist_list_sorted
 
-def do_google_serper_search(query:str=None)->str:
+async def do_google_serper_search(query:str=None)->str:
     google_serper = GoogleSerperRetriever(llm)
     _query = replace_chinese_punctuation(query);
-    ret_data = google_serper.perform_query(query=_query)
+    loop = asyncio.get_event_loop()
+    ret_data = await loop.run_in_executor(None, google_serper.perform_query, _query)
+    # ret_data = await google_serper.perform_query(query=_query)
     return ret_data
 
 # AI 聊天接口（非流式）
@@ -513,7 +515,7 @@ async def api_ai_chat(request: Request):
                 # google_serper = GoogleSerperRetriever(llm)
                 # query = replace_chinese_punctuation(message);
                 # ret_data = google_serper.perform_query(query=query)
-                ret_data = do_google_serper_search(query=message)
+                ret_data = await do_google_serper_search(query=message)
                 print(f"轉換為markdown前..........\n查詢內容：{message}\n回傳結果:\n{ret_data}")
                 ret_data = format_serper_results_to_markdown(serper_data=ret_data)
                 print(f"\n轉換為markdown後..........\n查詢內容：{message}\n回傳結果:\n{ret_data}")
