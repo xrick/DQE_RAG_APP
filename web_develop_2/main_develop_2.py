@@ -706,7 +706,7 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
             # You should replace this with your actual summarization/generation logic
             # Ensure your LLM call is async (e.g., llm.ainvoke or similar)
             logging.info("Step 5: Generating final combined answer...")
-            yield json.dumps({"type": "status", "message": "正在產生資料....."}) + "\n"
+            yield json.dumps({"type": "status", "message": "正在產生合併資料....."}) + "\n"
 
             # Construct the prompt input
             # Get internal context string/markdown
