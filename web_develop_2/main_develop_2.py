@@ -681,7 +681,7 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
 
         if should_web_search:
                 logging.info("Step 3: Initiating web search concurrently...")
-                yield json.dumps({"type": "status", "message": "Performing web search..."}) + "\n"
+                # yield json.dumps({"type": "status", "message": "Performing web search..."}) + "\n"
                 # Use asyncio.create_task to run it in the background
                 web_search_task = asyncio.create_task(do_google_serper_search(query=message))
         else:
@@ -706,7 +706,7 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
             # You should replace this with your actual summarization/generation logic
             # Ensure your LLM call is async (e.g., llm.ainvoke or similar)
             logging.info("Step 5: Generating final combined answer...")
-            yield json.dumps({"type": "status", "message": "正在產生合併資料....."}) + "\n"
+            # yield json.dumps({"type": "status", "message": "正在產生合併資料....."}) + "\n"
 
             # Construct the prompt input
             # Get internal context string/markdown
