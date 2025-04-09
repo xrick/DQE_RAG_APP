@@ -27,6 +27,7 @@ class LLMInitializer:
             return OllamaLLM(
                 model=model,
                 base_url=base_url,
+                streaming=True,
                 **kwargs
             )
         except Exception as e:
