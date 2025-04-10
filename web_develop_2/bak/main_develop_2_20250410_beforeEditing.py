@@ -43,8 +43,8 @@ start of fastapi startup: lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 全局變量
-    # global faiss_retriever, faiss_retriever_qsrc, faiss_retriever_module, dfObj, dfObj_aitrial, llm
-    global faiss_retriever, dfObj, llm
+    global faiss_retriever, faiss_retriever_qsrc, faiss_retriever_module, dfObj, dfObj_aitrial, llm
+    
     try:
         logging.info("開始初始化服務...")
 
@@ -57,28 +57,28 @@ async def lifespan(app: FastAPI):
         )
         logging.info("faiss_retriever 初始化成功")
 
-        # faiss_retriever_qsrc = CustomFAISSRetriever(
-        #     faiss_index_path=faiss_index_path_qsr,
-        #     vector_db_path="nodata",
-        #     model_name=encoding_model_name,
-        #     k=retrieval_num,
-        # )
-        # logging.info("faiss_retriever_qsrc 初始化成功")
+        faiss_retriever_qsrc = CustomFAISSRetriever(
+            faiss_index_path=faiss_index_path_qsr,
+            vector_db_path="nodata",
+            model_name=encoding_model_name,
+            k=retrieval_num,
+        )
+        logging.info("faiss_retriever_qsrc 初始化成功")
 
-        # faiss_retriever_module = CustomFAISSRetriever(
-        #     faiss_index_path=faiss_index_path_module,
-        #     vector_db_path="nodata",
-        #     model_name=encoding_model_name,
-        #     k=retrieval_num,
-        # )
-        # logging.info("faiss_retriever_module 初始化成功")
+        faiss_retriever_module = CustomFAISSRetriever(
+            faiss_index_path=faiss_index_path_module,
+            vector_db_path="nodata",
+            model_name=encoding_model_name,
+            k=retrieval_num,
+        )
+        logging.info("faiss_retriever_module 初始化成功")
 
         # 加載 CSV 數據
         dfObj = pd.read_csv(datasrc_deqlearn, encoding='utf-8-sig')
         logging.info("dfObj 初始化成功")
 
-        # dfObj_aitrial = pd.read_csv(datasrc_deqaitrial, encoding='utf-8-sig')
-        # logging.info("dfObj_aitrial 初始化成功")
+        dfObj_aitrial = pd.read_csv(datasrc_deqaitrial, encoding='utf-8-sig')
+        logging.info("dfObj_aitrial 初始化成功")
 
         # 初始化 LLM 模型
         llm = LLMInitializer().init_ollama_model()
@@ -99,6 +99,40 @@ async def lifespan(app: FastAPI):
 end of lifespan
 '''
 app = FastAPI(lifespan=lifespan)
+
+# @app.on_event("startup")
+# async def startup_event():
+#     # global ai_chat_service
+#     global faiss_retriever;
+#     global faiss_retriever_qsrc;
+#     global faiss_retriever_module;
+#     global dfObj;
+#     global dfObj_aitrial;
+#     global llm;
+#     try:
+#         logging.info("start to initialize services.......");
+#         # ai_chat_service = AIChatService(); # 初始化 KB聊天物件
+#         # print(f"vector db path: {vector_db_path}");
+#         faiss_retriever = CustomFAISSRetriever(faiss_index_path=faiss_index_path, vector_db_path="nodata", model_name=encoding_model_name, k=retrieval_num); # 初始化 faiss 檢索物件
+#         logging.info("faiss_retriever initializing succeed........");
+#         faiss_retriever_qsrc = CustomFAISSRetriever(faiss_index_path=faiss_index_path_qsr,
+#                                                     vector_db_path="nodata",model_name=encoding_model_name,k=retrieval_num);
+#         logging.info("faiss_retriever_qsrc initializing succeed........");
+#         faiss_retriever_module = CustomFAISSRetriever(faiss_index_path=faiss_index_path_module,
+#                                                     vector_db_path="nodata",model_name=encoding_model_name,k=retrieval_num);
+#         logging.info("faiss_retriever_module initializing succeed........");
+#         dfObj = pd.read_csv(datasrc_deqlearn, encoding='utf-8-sig'); # 初始化 faiss 檢索物件
+#         logging.info("dfObj initialized succeed........");
+#         dfObj_aitrial = pd.read_csv(datasrc_deqaitrial, encoding='utf-8-sig');
+#         logging.info("dfObj_aitrial initialized succeed........");
+#         llm = LLMInitializer().init_ollama_model()
+#         logging.info("llm initialized succeed........");
+
+#         # 初始化助手服務管理器
+#         logging.info("Maple-Leaf AI KB Services Initialized...");
+#     except Exception as e:
+#         logging.error(f"Failed to run in startup_event: {e}");
+#         raise RuntimeError(f"Failed to initialize AIChatService: {e}")
 
 # CORS 設置
 app.add_middleware(
@@ -455,6 +489,24 @@ async def api_ai_chat(request: Request):
         if not _poses:
             #"没有任何匹配的资料"
             chk_ifnodata="nodata"
+    elif search_action==2:
+        #進行相似度搜尋
+        _pos_qsrc, _distances_qsrc = search_similar_questions(faiss_retriever_qsrc, message);
+        _pos_module, _distance_module =  search_similar_questions(faiss_retriever_module,message);
+        message = replace_chinese_punctuation(message);
+        if not isinstance(_pos_qsrc, np.ndarray):
+            _pos_qsrc.extend(_pos_module);
+            _distances_qsrc.extend(_distance_module)
+            _poses, _dists = combine_pos_distance(_pos_qsrc, _distances_qsrc);
+        else:
+            _conc_pos_list = np.concatenate([_pos_qsrc, _pos_module], axis=0)
+            _conc_dist_list = np.concatenate([_distances_qsrc, _distance_module], axis=0)
+            _poses, _dists = combine_pos_distance(_conc_pos_list, _conc_dist_list);
+        print(f"combined_pos_list:\n{_poses}\ncombined_dist_list:\n{_dists}");
+        message = replace_chinese_punctuation(message);
+        if not _poses:
+            search_action = 99
+            chk_ifnodata="nodata";
     else:
         if search_action == 3:
             try:
@@ -477,8 +529,8 @@ async def api_ai_chat(request: Request):
         if chk_ifnodata != "nodata":
             if search_action == 1:
                 ai_response = await generate_content(message=message, data_frame=dfObj, data_pos=_poses, search_distances=_dists, search_action=search_action);
-            # elif search_action == 2:
-            #     ai_response = await generate_content(message=message, data_frame=dfObj_aitrial, data_pos=_poses, search_distances=_dists, search_action=search_action)
+            elif search_action == 2:
+                ai_response = await generate_content(message=message, data_frame=dfObj_aitrial, data_pos=_poses, search_distances=_dists, search_action=search_action)
             else:
                 ai_response = {
                     'primary_msg':ret_data,
@@ -554,9 +606,8 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
         internal_data_source = None
 
         # (Include your existing logic for search_action 1 and 2 here to populate _poses, _dists, chk_ifnodata)
-        
-        logging.info(f"***search_action***:{search_action}")
-        if search_action == 1 or search_action == 3:
+        # Determine internal_data_source (dfObj or dfObj_aitrial) based on search_action
+        if search_action == 1:
             _pos, _distances = search_similar_questions(faiss_retriever, message);
             # ... (rest of your thresholding logic for action 1) ...
             print(f"_pos:{_pos}\n_distances:{_distances}");
@@ -564,6 +615,7 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
             print(f"sorted_pos:{sorted_poses}\nsorted_distances:{sorted_dists}");
             pos_len = len(sorted_poses)
             dist = -1.0
+            # min_dist_idx = -1
             min_dist = 99999
             for i in range(pos_len):
                 dist = sorted_dists[i]
@@ -572,25 +624,52 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
                     _dists.append(sorted_dists[i])
                     if min_dist > dist:
                         min_dist = dist
-            message = replace_chinese_punctuation(message);
             if not _poses: chk_ifnodata="nodata"
             else: internal_data_source = dfObj
+        elif search_action == 2:
+            _pos_qsrc, _distances_qsrc = search_similar_questions(faiss_retriever_qsrc, message);
+            _pos_module, _distance_module = search_similar_questions(faiss_retriever_module,message);
+            # ... (rest of your combining logic for action 2) ...
+            message = replace_chinese_punctuation(message);
+            if not isinstance(_pos_qsrc, np.ndarray):
+                _pos_qsrc.extend(_pos_module);
+                _distances_qsrc.extend(_distance_module)
+                _poses, _dists = combine_pos_distance(_pos_qsrc, _distances_qsrc);
+            else:
+                _conc_pos_list = np.concatenate([_pos_qsrc, _pos_module], axis=0)
+                _conc_dist_list = np.concatenate([_distances_qsrc, _distance_module], axis=0)
+                _poses, _dists = combine_pos_distance(_conc_pos_list, _conc_dist_list);
+            print(f"combined_pos_list:\n{_poses}\ncombined_dist_list:\n{_dists}");
+            message = replace_chinese_punctuation(message);
+            if not _poses: 
+                chk_ifnodata="nodata"
+                search_action = 99
+            else: 
+                internal_data_source = dfObj_aitrial
 
         # Add handling if search_action is not 1 or 2 but requires internal data later?
 
         if chk_ifnodata != "nodata" and internal_data_source is not None:
             value_matrix = convert_df_to_list(internal_data_source, _poses)
+            # Optional: Format value_matrix into a simple markdown table or list for immediate display
+            # For simplicity, let's just send the raw list for now, or a placeholder message
+            # You might want to create a simplified formatting function here
+            # internal_results_formatted = f"Found {len(_poses)} potentially relevant internal items." # Placeholder
+            # Example formatting (can be more complex):
+            # headers=["模块", "严重度", "问题现象描述", ...] # Subset of required_columns
+            # internal_results_markdown = generate_markdown_table(headers=headers[:3], value_matrix=[row[:3] for row in value_matrix])
             headers=["模块", "严重度(A/B/C)", "问题现象描述", "原因分析", "改善对策", "经验萃取", "审后优化", "评分"]
             internal_results_markdown = generate_markdown_table(headers=headers, value_matrix=value_matrix);
+
 
             internal_results_data = {
                 "type": "internal_results",
                 "content": internal_results_markdown
             }
             yield json.dumps(internal_results_data) + "\n"
-            # logging.info("Step 2: Streamed internal search results.")
+            logging.info("Step 2: Streamed internal search results.")
         else:
-                internal_results_data = {"type": "internal_results", "content": "找不到任何内部资料"}
+                internal_results_data = {"type": "internal_results", "content": "nodata"}
                 yield json.dumps(internal_results_data) + "\n"
                 logging.info("Step 2: Streamed internal search result (no data found).")
 
@@ -598,11 +677,11 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
         web_search_task = None
         # Decide if web search is needed (e.g., always, or based on search_action, or if internal results are insufficient)
         # Let's assume for this example, we *always* do it if internal search happened or if action == 3
-        should_web_search = search_action == 3 #True#(chk_ifnodata != "nodata") or (search_action == 3)
+        should_web_search = True#(chk_ifnodata != "nodata") or (search_action == 3)
 
         if should_web_search:
                 logging.info("Step 3: Initiating web search concurrently...")
-                yield json.dumps({"type": "status", "message": "进行网路搜寻..."}) + "\n"
+                # yield json.dumps({"type": "status", "message": "Performing web search..."}) + "\n"
                 # Use asyncio.create_task to run it in the background
                 web_search_task = asyncio.create_task(do_google_serper_search(query=message))
         else:
@@ -611,8 +690,8 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
 
         # === Step 4 & 5: Wait for Web Search and Generate/Stream Final Answer ===
         final_answer_data = {"type": "final_answer", "content": ""}
-        logging.info(f"*****web_search_task*****:{web_search_task}")
-        if web_search_task and should_web_search:
+
+        if web_search_task:
             logging.info("Step 4: Waiting for web search completion...")
             raw_web_results = await web_search_task
             logging.info("Step 4: Web search completed.")
@@ -627,7 +706,7 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
             # You should replace this with your actual summarization/generation logic
             # Ensure your LLM call is async (e.g., llm.ainvoke or similar)
             logging.info("Step 5: Generating final combined answer...")
-            yield json.dumps({"type": "status", "message": "正在进行资料整理..."}) + "\n"
+            # yield json.dumps({"type": "status", "message": "正在產生合併資料....."}) + "\n"
 
             # Construct the prompt input
             # Get internal context string/markdown
@@ -676,14 +755,14 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
 
             logging.info("Step 5: Finished streaming final answer.")
 
-        # else:
-        #     # Handle case where only internal search was done (or neither)
-        #     if chk_ifnodata != "nodata":
-        #             final_answer_data["content"] = internal_results_markdown #internal_results_formatted # Or a summary of it
-        #             yield json.dumps(final_answer_data) + "\n"
-        #     else:
-        #             final_answer_data["content"] = "No relevant information found internally or via web search."
-        #             yield json.dumps(final_answer_data) + "\n"
+        else:
+            # Handle case where only internal search was done (or neither)
+            if chk_ifnodata != "nodata":
+                    final_answer_data["content"] = internal_results_markdown #internal_results_formatted # Or a summary of it
+                    yield json.dumps(final_answer_data) + "\n"
+            else:
+                    final_answer_data["content"] = "No relevant information found internally or via web search."
+                    yield json.dumps(final_answer_data) + "\n"
     
 
     except Exception as e:

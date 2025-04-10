@@ -13,36 +13,28 @@ const loadingText = '搜尋中......';
     let search_threshold = 25;
     function initializeSearchButtons() {
         const preciseButton = document.getElementById('precise-search');
-        // const tagButton = document.getElementById('tag-search');
+        const tagButton = document.getElementById('tag-search');
         const webButton = document.getElementById('web-search');
         
         preciseButton.addEventListener('click', () => {
             search_action = 1;
             preciseButton.classList.add('active');
-            // tagButton.classList.remove('active');
-            // webButton.classList.remove('active');
+            tagButton.classList.remove('active');
+            webButton.classList.remove('active');
         });
         
-        // tagButton.addEventListener('click', () => {
-        //     search_action = 2;
-        //     tagButton.classList.add('active');
-        //     preciseButton.classList.remove('active');
-        //     webButton.classList.remove('active');
-        // });
+        tagButton.addEventListener('click', () => {
+            search_action = 2;
+            tagButton.classList.add('active');
+            preciseButton.classList.remove('active');
+            webButton.classList.remove('active');
+        });
 
         webButton.addEventListener('click', () => {
-            const isActive = webButton.classList.contains("active");
-            if(!isActive){
-                search_action = 3;
-                webButton.classList.add('active');
-                // preciseButton.classList.remove('active');
-                // tagButton.classList.remove('active');
-            }else{
-                search_action = 1;
-                webButton.classList.remove('active');
-                // preciseButton.classList.remove('active');
-            }
-            
+            search_action = 3;
+            webButton.classList.add('active');
+            preciseButton.classList.remove('active');
+            tagButton.classList.remove('active');
         });
     }
 
