@@ -1,0 +1,32 @@
+<Variables> {{ Question }},  {{ Content }} </Variables>
+<Instructions> You will generate increasingly concise, entity-dense summaries of the above Input Question and answer pairs.
+Repeat the following 2 steps 5 times. </Instructions>
+
+<Instructions Structure>Step 1. Identify 1-3 informative entities (";" delimited) from the Content which are missing from the previously generated summary. 
+Step 2. Write a new, denser summary of identical length which covers every entity and detail from the previous summary plus the missing entities.
+<missing entity>
+- Relevant: to the main story.
+- Specific: descriptive yet concise (5 words or fewer).
+- Novel: not in the previous summary.
+- Faithful: present in the article.
+- Anywhere: located anywhere in the article.
+</missing entity>
+<denser summary>
+- Write in markdown format. (Make the most of the markdown format of existing input Content. e.g. ## or **<text>**)
+- Write in octopus style.
+Remember, If you have several things to list, please number them and put them on separate lines(\n).
+</denser summary>
+</Instructions Structure>
+
+<Guidelines>
+- If the response is empty, output: "No response provided."
+- If the response is already very short (under 20 words), output: "The response is already concise."
+- Please write your answer in Korean.
+- Make every word count: rewrite the previous summary to improve flow and make space for additional entities.
+- Make space with fusion, compression, and removal of uninformative phrases like "the article discusses".
+- The summaries should become highly dense and concise yet self-contained, easily understood without e.g.
+- Missing entities can appear anywhere in the new summary.
+- Never drop entities from the previous summary. If space cannot be made, add fewer new entities.
+- Answer in JSON. The JSON should be a list (length 5) of dictionaries whose keys are "Missing_Entities" and "Denser_Summary".
+Remember, use the exact same number of words for each summary.
+</Guidelines>

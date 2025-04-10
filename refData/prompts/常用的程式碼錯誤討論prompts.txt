@@ -1,0 +1,34 @@
+There is an error ocurred while I try to create index on the collection:
+when running on the function:
+```python
+client.create_index(
+    collection_name=collection_name,
+    index_params=index_params
+)
+```
+error message:
+MilvusException: <MilvusException: (code=65535, message=invalid index type: HNSW, local mode only support FLAT IVF_FLAT AUTOINDEX: )>
+
+please think step by step to solve the problem
+
+
+---------------------------------------------------------------------------------------------------------------
+
+There is an error ocurred while I try to execute test_hybrid_search:
+when running on the function:
+```python
+results = client.search(
+           collection_name=collection_name,
+           data=[query_vec],
+           expr="severity == 'A'",  # 篩選條件獨立傳遞
+          limit=3,
+          output_fields=["module", "severity"],
+          search_params={"ef": 64}  # 僅保留HNSW專用參數
+      )
+```
+error message:
+MilvusException: <MilvusException: (code=1, message=Unexpected error, message=<Prepare.search_requests_with_expr() got multiple values for argument 'expr'>)>
+
+please think step by step to solve the problem
+
+---------------------------------------------------------------------------------------------------------------

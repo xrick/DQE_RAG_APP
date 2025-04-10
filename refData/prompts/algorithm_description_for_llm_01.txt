@@ -1,0 +1,20 @@
+please generate a python function which satisfy the following requirements:
+1. there are two lists as following:
+   pos_lists = [[2, 6, 9, 11], [1, 2, 5, 11,]]
+   distance_lists=[
+         [0.567, 7.821, 10.678, 15.223],
+         [0.347, 0.867, 6.654, 18.822]
+]
+considering the values mapping relation between pos_lists and distance_lists, which means the first list in pos_lists: [2, 6, 9, 11] and first list in distance_list:[0.567, 7.821, 10.678, 15.223], we can get: 2->0.567, 6->7.821, 9->10.679, 11->15.223. the same as each second list in pos_lists and distance_lists: 1->0.347, 2->0.867, 5->6.654, 11->18.822
+2. combine two lists in pos_lists and remove the duplicated items
+3. combine two lists in distance_lists and remove the duplicated items following constrains:
+    3.1. the number of the combined list from distance_lists must be the same as combined list of pos_lists.
+    3.2. take the above pos_lists and distance_lists:
+          combined_list_pos = [1, 2, 5, 6, 11]
+          combined_list_distance=[
+                       0.347,
+                       (0.576+0.867)/2, #format(.3f)
+                       6.654,
+                       7.821,
+                       (15.223+18.822)/2 #format(.3f)
+           ]

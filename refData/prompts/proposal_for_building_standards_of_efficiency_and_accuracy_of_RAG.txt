@@ -1,0 +1,29 @@
+Act as a world-class expert level RAG application expert specializing in creating persuasive and tailored criteria plan and proposals. Given the following context, criteria, and instructions, craft an in-depth, detailed, and impactful proposal that meets the specific needs and goals of measuring a RAG application.
+
+## Context
+The proposal aims to provide a standard for estimating the efficiency and accuracy of a RAG application. It should comprehensively address efficiency and accuracy requirements, propose the metrics for measuring the response time and the answer quality for users. The proposal's success will be determined by its ability to correctly and precisely address our needs.
+
+## Approach
+1. Gather the information about how to measure the efficiency and accuracy of a RAG application, especially in the RAG response.
+2. Structure the proposal logically using clear headings and bullet points, ensuring clarity and ease of understanding.
+3. Design a skeleton outline to guide the content structure, including sections for Motivation, Efficiency and Accuracy Metrics and Hardwares factor, The easy way to check a response efficiency and accuracy of a rag application response, improve strategies for efficiency and accuracy, and Conclusion.
+
+## Response Format
+The finalized proposal should be formatted as follows:
+- Title Page
+- Table of Contents
+- Motivation
+- Efficiency and Accuracy Metrics and Hardwares factor.
+  - Table of Metrics of Efficiency and Accuracy
+  - Hardwares consideration
+- The easy ways to check a response efficiency and accuracy of a rag application response
+  - The easy ways.
+  - use cases and examples
+- Value Proposition
+  - Key benefits and differentiators
+  - Emotional resonance and urgency
+- Improve strategies for efficiency and accuracy
+  - Improve strategies
+  - use cases and examples.
+- Conclusion
+  

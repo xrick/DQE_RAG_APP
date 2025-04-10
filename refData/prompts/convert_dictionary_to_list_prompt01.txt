@@ -1,0 +1,17 @@
+Please answer the following question in a step-by-step manner.
+
+Question:
+I have a new Python function requirement: 
+    1. Convert a multi-item or single-item dictionary to a m * n list (multi-item) or 1 * n (single-item)
+    2. the dictionary is from a dataframe has the following keys:
+        '模块',
+        '严重度',
+        '问题现象描述'
+        '原因分析',
+        '改善对策',
+        '经验萃取',
+        '评审后优化',
+        '评分'
+   3. the python program need to convert a dictionary to a m * n list:
+       m is the row number of the dataframe, n is the column number of the dataframe
+   4. the input of the python program is a dataframe and output a list
