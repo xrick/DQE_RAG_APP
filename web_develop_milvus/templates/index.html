@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亿道智能中心</title>
+    <!-- 在 head 部分添加 marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- React 18 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    
+</head>
+
+
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    
+    <div id="root"></div>
+
+    {% raw %}
+    <script type="text/babel">
+        const HomeContent = ({ onServiceClick }) => {
+            const services_row1 = [
+                {
+                    icon: "message-circle",
+                    title: "KB智能助手",
+                    description: "智能QA助手，快速回答問題",
+                    id: "chat"
+                },
+                
+            ];
+            // const services_row2 = [
+            //     {
+            //         icon: "notebook-pen",
+            //         title: "Module-4",
+            //         description: "Module-4",
+            //         id: "composition_ocr"
+            //     },
+            // ];
+
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {services_row1.map((service_row1, index) => (
+                        <div 
+                            key={index}
+                            onClick={() => onServiceClick(service_row1.id)}
+                            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-6 cursor-pointer transform hover:-translate-y-1"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="p-2 bg-blue-50 dark:bg-blue-900 rounded-lg">
+                                    <i 
+                                        data-lucide={service_row1.icon}
+                                        className="w-6 h-6 text-blue-500 dark:text-blue-300"
+                                    ></i>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold dark:text-white">
+                                        {service_row1.title}
+                                    </h3>
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
+                                        {service_row1.description}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                
+            );
+        };
+        
+        const App = () => {
+            const [isDark, setIsDark] = React.useState(
+                window.matchMedia('(prefers-color-scheme: dark)').matches
+            );
+
+            const [currentView, setCurrentView] = React.useState('home');
+            const [currentContent, setCurrentContent] = React.useState(null);
+
+            const toggleDarkMode = () => {
+                setIsDark(!isDark);
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('darkMode', !isDark);
+            };
+
+
+            async function handleServiceClick(serviceId) {
+                if (serviceId === 'chat') {
+                    try {
+                        // 加載聊天內容
+                        const response = await fetch('/chat-content'); // 假設這個路由返回聊天的 HTML
+                        const content = await response.text();
+
+                        // 更新 React 狀態以顯示聊天界面
+                        setCurrentView('chat');
+                        setCurrentContent(content);
+
+                        // 動態加載 ai-chat.js
+                        const script = document.createElement('script');
+                        script.src = '/static/js/ai-chat.js'; // 假設 ai-chat.js 的路徑
+                        script.onload = () => {
+                            console.log("ai-chat.js 加載完成");
+                            if (typeof window.initializeChatInterface === 'function') {
+                                console.log("調用 initializeChatInterface...");
+                                window.initializeChatInterface(); // 調用全局函數
+                            } else {
+                                console.error("initializeChatInterface 未定義！");
+                            }
+                        };
+                        script.onerror = () => {
+                            console.error("ai-chat.js 加載失敗！");
+                        };
+                        document.body.appendChild(script);
+                    } catch (error) {
+                        console.error('Error loading chat content:', error);
+                    }
+                }
+            } 
+
+            React.useEffect(() => {
+                lucide.createIcons();
+                const savedDarkMode = localStorage.getItem('darkMode');
+                if (savedDarkMode !== null) {
+                    setIsDark(JSON.parse(savedDarkMode));
+                    if (JSON.parse(savedDarkMode)) {
+                        document.documentElement.classList.add('dark');
+                    }
+                }
+            }, []);
+            
+            return (
+                <div className="min-h-screen flex">
+                    {/* Sidebar */}
+                    <div className="w-64 bg-white dark:bg-gray-800 shadow-lg">
+                        <div className="p-4">
+                            <div className="flex items-center gap-2">
+                                <i data-lucide="cpu" className="w-8 h-8 text-blue-500"></i>
+                                <h1 className="text-xl font-bold dark:text-white">亿道智能中心</h1>
+                            </div>
+                        </div>
+                        <nav className="mt-4">
+                            <div
+                                className={`px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                    currentView === 'home' ? 'bg-gray-100 dark:bg-gray-700' : ''
+                                }`}
+                                onClick={() => setCurrentView('home')}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <i data-lucide="home" className="w-5 h-5"></i>
+                                    <span>服務主頁</span>
+                                </div>
+                            </div>
+                            
+                        </nav>
+                    </div>
+
+                    {/* Main Content */}
+                    <div id="main-content" className="flex-1 flex flex-col">
+                       
+                        <main id="inner-content" className="flex-1 p-6">
+                            {currentView === 'home' && (
+                                <HomeContent onServiceClick={handleServiceClick} />
+                            )}
+                            {currentView === 'chat' && (
+                                <div id="chat-main" dangerouslySetInnerHTML={{ __html: currentContent }} />
+                            )}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+        
+    </script>
+    {% endraw %}
+</body>
+</html>

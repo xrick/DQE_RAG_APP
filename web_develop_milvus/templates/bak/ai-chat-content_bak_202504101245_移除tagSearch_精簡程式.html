@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仡道智能KB</title>
+    <!-- CSS 樣式 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css"/>
+    <!-- 預設主題 -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>    
+    <!-- 再載入 marked -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- JavaScript 核心 -->
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
+
+    <style>
+        /*表格樣式*/
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .markdown-content th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            padding: 0.5rem;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .markdown-content td {
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        
+        .markdown-content ul, .markdown-content ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .markdown-content h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 0.75rem;
+        }
+        
+        .markdown-content code {
+            background-color: #f1f5f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        
+        .markdown-content pre {
+            background-color: #f1f5f9;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            /* height: 85vh; */
+            height: 90vh;
+            gap: 10px;
+        }
+        #preview {
+            font-family: Microsoft JhengHei;
+            font-size:16px;
+            flex: 3;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-section {
+            font-family: Microsoft JhengHei;
+            font-size:16px;
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            height:10vh;
+            margin-bottom: 10px;  /* 增加底部間距 */
+        }
+        #editor {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            height: 100%;
+        }
+        #submit {
+            padding: 10px 20px;
+            background-color: #e0e0e0; /* 改為淺灰色 */
+            color: #424242; /* 深灰色文字 */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #submit:hover {
+            background-color: #bdbdbd; /* 懸停時稍微深一點的灰色 */
+        }
+        /* Enhanced code block styling */
+        pre {
+            background-color: #6894f3 !important;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        pre code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 20px !important;
+            border-radius: 8px;
+        }
+        /* Additional syntax highlighting customization */
+        .hljs-keyword {
+            color: #c678dd !important;
+        }
+        .hljs-string {
+            color: #98c379 !important;
+        }
+        .hljs-comment {
+            color: #5c6370 !important;
+            font-style: italic;
+        }
+        
+        /* 搜尋按鈕容器 */
+        .search-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        /* 搜尋按鈕樣式 */
+        .search-button {
+            /* padding: 8px 16px; */
+            border: 2px solid #bdbdbd; /* 改為淺灰色邊框 */
+            border-radius: 20px;
+            background-color: white;
+            color: #757575; /* 文字顏色改為中灰色 */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            margin: 15px 0;  /* 增加上下間距 */
+            padding: 0 10px;  /* 增加左右內距 */
+        }
+        
+        /* 按鈕被按下的樣式 */
+        .search-button.active {
+            background-color: #e0e0e0; /* 改為淺灰色背景 */
+            color: #424242; /* 文字顏色改為深灰色 */
+            border-color: #9e9e9e; /* 邊框顏色改為中灰色 */
+        }
+
+        /* 按鈕懸停效果 */
+        .search-button:hover {
+            background-color: #f5f5f5; /* 非常淺的灰色 */
+        }
+        
+        .search-button.active:hover {
+            background-color: #bdbdbd; /* 活動狀態下懸停時稍深的灰色 */
+        }
+
+        
+
+        input[type="range"]#search-threshold {
+            margin-top: 15px;
+        }
+
+        #search-threshold-label {
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+
+        /* 調整用戶消息樣式 */
+        .message.user {
+            background-color: #f5f5f5; /* 淺灰色背景 */
+            color: #424242; /* 深灰色文字 */
+            border-radius: 15px 15px 2px 15px;
+            padding: 10px 15px;
+            max-width: 80%;
+            margin: 10px 0;
+            align-self: flex-end;
+        }
+
+        /* 確保表格正常顯示，避免多餘符號 */
+
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background-color: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f5f5;
+        }
+
+        /* 移除任何可能的額外符號 */
+        #preview > :first-child {
+            margin-top: 0;
+        }
+
+        .loading-message {
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="preview"></div>
+        <!-- 新增的按鈕區域 -->
+        <div class="search-buttons">
+            <div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px;">
+                <input type="range" id="search-threshold" min="1" max="30" step="0.1" value="25" style="width: 150px;">
+                <label id="search-threshold-label" style="margin-top: 5px; font-size: 12px; color: #555;">关联距离 : 25</label>
+            </div>
+            <button id="precise-search" class="search-button active">精准搜寻</button>
+            <!--<button id="tag-search" class="search-button">标籤搜寻</button>-->
+            <button id="web-search" class="search-button">包含外网搜寻</button>  
+        </div>
+        <div class="input-section">
+            <textarea id="editor" placeholder="请输入您的问题..."></textarea>
+            <button id="submit">送出</button>
+        </div>
+    </div>
+
+</body>
+</html>
