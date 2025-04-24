@@ -83,39 +83,9 @@ class MilvusQuery(DatabaseQuery):
             filter=filter
         )
     
-    def extract_entity_values_to_list(raw_entity_list: List[Dict[str, Any]], keys_order:List[str],threshold:float)-> List[List[Any]]:
-        """
-        將包含 'entity' 字典的原始列表轉換為值的列表的列表，
-        並根據 'distance' 值進行過濾。
-
-        遍歷輸入列表中的每個字典，檢查其 'distance' 值。如果 'distance'
-        小於或等於給定的 threshold，則提取其 'entity' 鍵對應的嵌套字典中的值，
-        並按照預定義的順序將這些值組成一個內部列表。最終返回包含所有
-        滿足條件的內部列表的外部列表。
-        Args:
-            raw_entity_list: 一個列表，其中每個元素都是一個字典。
-                            預期每個字典包含 'distance' (數值類型) 和 'entity' 鍵。
-                            'entity' 的值應為另一個包含以下鍵的字典：
-                            "problemtype", "severity", "module", "causeAnalysis",
-                            "description", "improve", "experience"。
-            threshold:       一個浮點數。只有當 item_dict['distance'] <= threshold 時，
-                            對應的 'entity' 數據才會被處理和包含在結果中。
-        Returns:
-            一個列表的列表。每個內部列表包含按以下順序排列的值：
-            ["problemtype", "severity", "module", "causeAnalysis",
-            "description", "improve", "experience"]。
-            僅包含那些原始 'distance' 值小於或等於 threshold 的項目。
-            如果 'entity' 字典中缺少某個鍵，則該位置的值為 None。
-            如果輸入列表的某個元素缺少 'entity' 或 'distance' 鍵，
-            或者它們的類型不正確，則該元素將被跳過。
-
-        Raises:
-            TypeError: 如果輸入的 raw_entity_list 不是列表。
-                    (由 Python 迭代機制隱式處理)
-        """
+    def extract_entity_values_to_list(self, raw_entity_list:List[Dict[str, Any]]=None, keys:List[str]=None, threshold:float=None)-> List[List[Any]]:
         # 初始化結果列表
         result_list = []
-
         # 遍歷輸入列表
         for item_dict in raw_entity_list:
             # 步驟 5 & 7: 獲取 entity 和 distance，並進行健壯性檢查和條件判斷
@@ -127,17 +97,16 @@ class MilvusQuery(DatabaseQuery):
                 print(f"distance:{distance},  threshold:{threshold}")
                 # 如果所有條件都滿足，則提取 entity 中的值
                 # 使用 .get(key, None) 處理可能缺失的鍵
-                inner_list = [entity.get(key, None) for key in keys_order]
+                inner_list = [entity.get(key, None) for key in keys]
 
                 # 步驟 5: 將滿足條件的 inner_list 添加到結果列表
                 result_list.append(inner_list)
             # else:
                 # 不滿足條件的項目將被自動跳過，無需在此處添加 append
-
         # 返回過濾後的結果列表
         return result_list
     
-    def get_entity_list(raw_result:List=None):
+    def get_entity_list(self, raw_result:List=None):
         return [item_dict['entity'] for item_dict in raw_result[0] if 'entity' in item_dict]
 
 
