@@ -4,26 +4,26 @@ from typing import List, Dict, AsyncGenerator
 from fastapi import FastAPI, Request, HTTPException #,File, UploadFile
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from langchain.prompts import PromptTemplate
+# from app.ai_chat_service import AIChatService
 from dotenv import load_dotenv
 import pandas as pd
 import logging
-import asyncio
+import numpy as np
 import re
 import html
 import json
-from time import time
 from pytablewriter import MarkdownTableWriter
 from pytablewriter.style import Style
-
 from libs.RAG.Retriever.CustomRetriever import CustomFAISSRetriever;
 from libs.RAG.LLM.LLMInitializer import LLMInitializer;
 from libs.RAG.Tools.ContentRetriever import GoogleSerperRetriever, CompositiveGoogleSerperSummarizer
 from libs.utils.text_processing import format_serper_results_to_markdown
-from libs.RAG.DB.MilvusQuery import MilvusQuery
-
+from time import time
+from fastapi.responses import StreamingResponse
+import asyncio
+from langchain.prompts import PromptTemplate
 
 ###setup debug
 logging.basicConfig(
