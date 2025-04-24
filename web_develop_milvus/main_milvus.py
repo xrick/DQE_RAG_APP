@@ -508,6 +508,11 @@ async def http_exception_handler(request, exc):
 
 '''
 ###############################################################
+Task: Based on the user query, internal results, and web search results, provide a comprehensive answer.
+    First, summarize the key findings from internal data relevant to the query.
+    Second, summarize the key findings from the web search relevant to the query.
+    Finally, provide a synthesized answer combining insights from both sources. Use Markdown format.
+    Answer in Simplified Chinese.
 '''
 @app.post("/api/ai-chat-stream")
 async def api_ai_chat_stream(request: Request):
@@ -644,11 +649,12 @@ async def process_chat_stream(message: str, search_action: int, search_threshold
 
             Web Search Results:
             {web_context}
-
-            Task: Based on the user query, internal results, and web search results, provide a comprehensive answer.
+            Task: 
+            Based on the user query, internal results, and web search results, you **must** think step by step to provide a comprehensive answer.
             First, summarize the key findings from internal data relevant to the query.
             Second, summarize the key findings from the web search relevant to the query.
-            Finally, provide a synthesized answer combining insights from both sources. Use Markdown format.
+            Finally, provide a synthesized answer combining insights from both sources. 
+            You **Must** Use Markdown format.
             Answer in Simplified Chinese.
             """
             combined_prompt = PromptTemplate(input_variables=["query", "internal_context", "web_context"], template=combined_template)

@@ -176,7 +176,7 @@ def sanitize_text(text):
 
 
 def search_similar_questions(question:str=None)->Any:
-    raw_ret = milvus_qry(query=question, collection_name=_collectionName, output_fields=_outputfields, limit=retrieval_num)
+    raw_ret = milvus_qry.query(query=question, collection_name=_collectionName, output_fields=_outputfields, limit=retrieval_num)
     return raw_ret
 
 def generate_markdown_table(value_matrix):

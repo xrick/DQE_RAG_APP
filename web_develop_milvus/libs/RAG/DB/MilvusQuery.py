@@ -1,7 +1,7 @@
 
 import sys
 import os
-sys.path.append(os.path.abspath('../'))
+# sys.path.append(os.path.abspath('../'))
 from .DatabaseQuery import DatabaseQuery
 from pymilvus import MilvusClient
 from pymilvus.client.types import LoadState
@@ -17,7 +17,7 @@ import polars as pl
 #     Collection,
 # )
 # from pymilvus.client.types import LoadState
-from utils.logUtils import debugInfo
+# from utils.logUtils import debugInfo
 
 
 # Milvus 查詢類別
@@ -62,7 +62,7 @@ class MilvusQuery(DatabaseQuery):
     def query(self, query:str=None, collection_name:str=None, output_fields:List=None, limit:int=None)->Any:
         _load_state = self.client.get_load_state(collection_name= collection_name)
         if _load_state['state'] != LoadState.Loaded:
-            debugInfo(f"the collection:{collection_name} is not loaded yet")    
+            # debugInfo(f"the collection:{collection_name} is not loaded yet")    
             self.client.load_collection(collection_name = collection_name)
         encoded_query = self.ef.encode_documents([query])
         query_vec = encoded_query[0]
