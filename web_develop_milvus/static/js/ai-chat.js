@@ -10,7 +10,7 @@ const loadingText = '搜尋中......';
     // 添加搜尋模式變數和控制邏輯
     let search_action = 1; // 預設為精準搜尋
     // 定義初始化聊天介面的函數
-    let search_threshold = 25;
+    let search_threshold = 0.3;
     function initializeSearchButtons() {
         const preciseButton = document.getElementById('precise-search');
         // const tagButton = document.getElementById('tag-search');
@@ -51,7 +51,7 @@ const loadingText = '搜尋中......';
     const thresholdLabel = document.getElementById('search-threshold-label');
     thresholdSlider.addEventListener('input', function(e) {
         search_threshold = parseFloat(e.target.value);
-        thresholdLabel.textContent = `当前阈值: ${search_threshold.toFixed(1)}`;
+        thresholdLabel.textContent = `当前阈值: ${search_threshold.toFixed(2)}`;
     });
 
     function initializeChatInterface() {
@@ -247,44 +247,6 @@ const loadingText = '搜尋中......';
             appendMessage("error", `Connection or setup failed: ${error.message}`);
         });
 
-        // fetch("/api/ai-chat", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({ 
-        //         message,
-        //         search_action, // 添加搜尋模式參數
-        //         search_threshold
-        //     }),
-        // })
-        // .then((response) => {
-        //     if (!response.ok) {
-        //         throw new Error(`HTTP error! status: ${response.status}`);
-        //     }
-        //     return response.json();
-        // })
-        // .then((data) => {
-        //     // 停止載入動畫
-        //     stopLoadingAnimation();
-        //     console.log("後端回應：", data);
-        //     if (data && data.response) {
-        //         // appendMessage("ai", `${JSON.stringify(data.response)}`);
-        //         // console.log(data.response['primary_msg'])
-        //         appendMessage("DQE-AI:", data.response['primary_msg'],'markdown')
-        //         appendMessage("總共耗時:", data.response['totaltime'],'markdown')
-        //         // appendMessage("similar questions:", data.response['googleserper'],'markdown')
-        //         // appendMessage("similar questions:", data.response['googleserper'],'puretxt')
-        //     } else {
-        //         appendMessage("error", "後端未返回有效回應！");
-        //     }
-        // })
-        // .catch((error) => {
-        //     // 停止載入動畫
-        //     stopLoadingAnimation();
-        //     console.error("請求失敗詳情:", error);
-        //     appendMessage("error", `連接失敗: ${error.message}`);
-        // });
     }
 
 

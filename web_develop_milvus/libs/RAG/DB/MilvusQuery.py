@@ -8,6 +8,7 @@ from pymilvus.client.types import LoadState
 from pymilvus.model.dense import SentenceTransformerEmbeddingFunction
 from typing import List, Any, Dict
 import polars as pl
+import logging
 
 # from pymilvus import (
 #     MilvusClient,
@@ -19,6 +20,12 @@ import polars as pl
 # from pymilvus.client.types import LoadState
 # from utils.logUtils import debugInfo
 
+###setup debug
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler()]
+)
 
 # Milvus 查詢類別
 class MilvusQuery(DatabaseQuery):
@@ -29,6 +36,7 @@ class MilvusQuery(DatabaseQuery):
         self.used_collection = collection
         self.embedding_model="jina-embeddings-v2-base-zh"
         self.embedding_model_path=embedding_model_path#"../../../Embedding_Models/jina-embeddings-v2-base-zh"
+        print(f"embedding path:{embedding_model_path} in MilvusQuery")
         self.ef=SentenceTransformerEmbeddingFunction(self.embedding_model_path, trust_remote_code=True)
 
     def create_collection(self, collection_name, dimension, schema=None):
@@ -84,8 +92,34 @@ class MilvusQuery(DatabaseQuery):
         )
     
     def extract_entity_values_to_list(self, raw_entity_list:List[Dict[str, Any]]=None, keys:List[str]=None, threshold:float=None)-> List[List[Any]]:
+        """
+        Bug:
+        根據 2024 年 5 月的 GitHub 回報，當你設定 metric_type 為 COSINE 時，Milvus 回傳的 distance 值與一般認知的 cosine distance 定義相反：
+
+        完全相同的向量會得到 -1
+
+        完全不相關得到 0
+
+        完全相反得到 1
+        也就是說，目前 Milvus 回傳的 distance 其實是「cosine similarity 的負值」或是直接回傳 similarity 而非 distance，導致排序與預期顛倒。
+
+        這會造成你遇到的情況：「距離值較大」的結果反而更相關，因為在這個實作下，越小的 distance 其實代表越不相似，越大的 distance 反而是越相似。
+        這與 cosine distance 應該「越小越相似」的定義是相反的。
+
+        解決建議
+        暫時解法：你可以在應用層將 distance 乘以 -1 或重新排序，讓結果符合「越小越相似」的直覺。
+
+        關注官方修正：這個問題已被官方回報，建議持續關注 Milvus 的 issue 更新。
+
+        檢查 embedding 模型：如果你用的 embedding 模型對非英文文本（如「印度」）支援不佳，也可能導致語意不準確，建議確認 embedding 輸出的品質。
+
+        補充說明
+        Milvus 官方文件也明確指出, cosine similarity 介於 [-1, 1]，而 cosine distance 應為 
+        1 - cosine similarity, 但目前實作與文件描述不符，這正是你遇到問題的根本原因。
+        """
         # 初始化結果列表
         result_list = []
+        # estimeated_threshold = -1 * threshold 
         # 遍歷輸入列表
         for item_dict in raw_entity_list:
             # 步驟 5 & 7: 獲取 entity 和 distance，並進行健壯性檢查和條件判斷
@@ -93,7 +127,7 @@ class MilvusQuery(DatabaseQuery):
             distance = item_dict.get('distance')
 
             # 檢查 entity 是否是字典，distance 是否是數值，以及 distance 是否 <= threshold
-            if isinstance(entity, dict) and isinstance(distance, (int, float)) and distance <= threshold:
+            if isinstance(entity, dict) and isinstance(distance, (int, float)) and distance >= threshold:
                 print(f"distance:{distance},  threshold:{threshold}")
                 # 如果所有條件都滿足，則提取 entity 中的值
                 # 使用 .get(key, None) 處理可能缺失的鍵

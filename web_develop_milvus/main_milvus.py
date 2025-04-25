@@ -43,7 +43,7 @@ encoding_model_path = os.getenv("EMBEDDEDING_MODEL_PATH")
 retrieval_num = 10;
 LLM_MODEL='deepseek-r1:7b'#'phi4:latest';
 logging.info(f"Encoding model: {encoding_model_name}");
-
+logging.info(f"Encoding model path: {encoding_model_path}");
 '''
 start of fastapi startup: lifespan
 '''
@@ -71,7 +71,9 @@ async def lifespan(app: FastAPI):
         headers = ["问题瞭型","模块", "严重度(A/B/C)", "问题现象描述", "原因分析", "改善对策", "经验萃取"]
         _outputfields = ["problemtype", "module", "severity", "causeAnalysis", "description", "improve", "experience"]
         # 初始化milvus client object
-        milvus_qry = MilvusQuery(database=_dbName,embedding_model_path=encoding_model_path)
+        _embedding_path = "/home/mapleleaf/LCJRepos/Embedding_Models/jina-embeddings-v2-base-zh"
+        logging.info(f"encoding_model_path is {_embedding_path}")
+        milvus_qry = MilvusQuery(database=_dbName,embedding_model_path=_embedding_path)
         milvus_qry.load_collection(collection_name=_collectionName)
         logging.info("完成MilvusQuery物件初始化")
         
@@ -309,7 +311,7 @@ async def api_ai_chat_stream(request: Request):
     data = await request.json()
     message = data.get("message")
     search_action = int(data.get("search_action", 1)) # Default to precise
-    search_threshold = float(data.get("search_threshold", 25.0))
+    search_threshold = float(data.get("search_threshold", 0.3))
 
     if not message:
         raise HTTPException(status_code=400, detail="Message is required")
