@@ -14,13 +14,22 @@ const loadingText = '搜尋中......';
     let search_threshold = 0.3;
     function initializeSearchButtons() {
         const preciseButton = document.getElementById('precise-search');
+        // const tagButton = document.getElementById('tag-search');
         const webButton = document.getElementById('web-search');
         
         preciseButton.addEventListener('click', () => {
             search_action = 1;
             preciseButton.classList.add('active');
+            // tagButton.classList.remove('active');
+            // webButton.classList.remove('active');
         });
         
+        // tagButton.addEventListener('click', () => {
+        //     search_action = 2;
+        //     tagButton.classList.add('active');
+        //     preciseButton.classList.remove('active');
+        //     webButton.classList.remove('active');
+        // });
 
         webButton.addEventListener('click', () => {
             const isActive = webButton.classList.contains("active");
@@ -36,49 +45,16 @@ const loadingText = '搜尋中......';
             }
             
         });
-
-        // *** 新增：確保初始按鈕狀態正確 ***
-        if (search_action === 1) {
-            preciseButton.classList.add('active');
-            webButton.classList.remove('active');
-        } else if (search_action === 3) {
-            // preciseButton.classList.remove('active');
-            preciseButton.classList.add('active');
-            webButton.classList.add('active');
-        }
     }
-        // *** 初始按鈕狀態結束 ***
-
-    // 页面加载时调用初始化函数
-    // document.addEventListener('DOMContentLoaded', initializeSlider);
-
-    function initializeSlider() {
-        let slider = document.getElementById('search-threshold');
-        let label = document.getElementById('search-threshold-label');
-        
-        const sliderlistener = function(e) {
-            console.log('滑動條事件觸發', e.target.value);
-            search_threshold = parseFloat(e.target.value);
-            label.textContent = `当前阈值: ${search_threshold.toFixed(2)}`;
-        }
-        // 清除现有事件监听器
-        // slider.replaceWith(slider.cloneNode(true));
-        // slider = document.getElementById('search-threshold');
-        slider .removeEventListener('input', sliderlistener);
-        
-        // 添加新的事件监听器
-        slider.addEventListener('input', sliderlistener);
-    }
-
 
     // 新增滑動條事件監聽
-    // const thresholdSlider = document.getElementById('search-threshold');
-    // const thresholdLabel = document.getElementById('search-threshold-label');
-    // thresholdSlider.addEventListener('input', function(e) {
-    //     console.log('滑動條事件觸發', e.target.value);
-    //     search_threshold = parseFloat(e.target.value);
-    //     thresholdLabel.textContent = `当前阈值: ${search_threshold.toFixed(2)}`;
-    // });
+    const thresholdSlider = document.getElementById('search-threshold');
+    const thresholdLabel = document.getElementById('search-threshold-label');
+    thresholdSlider.addEventListener('input', function(e) {
+        console.log('滑動條事件觸發', e.target.value);
+        search_threshold = parseFloat(e.target.value);
+        thresholdLabel.textContent = `当前阈值: ${search_threshold.toFixed(2)}`;
+    });
 
     function initializeChatInterface() {
         const maxRetries = 10;
@@ -105,7 +81,6 @@ const loadingText = '搜尋中......';
                 return;
             }
             initializeSearchButtons();
-            initializeSlider();
     
             // 綁定發送按鈕事件
             sendButton.addEventListener("click", function() {
@@ -177,6 +152,53 @@ const loadingText = '搜尋中......';
         }
     }
 
+    // 添加動畫控制函數
+    // function startLoadingAnimation() {
+    //     if (loadingAnimationTimer) {
+    //         clearInterval(loadingAnimationTimer);
+    //     }
+        
+    //     currentLoadingText = '';
+    //     const loadingDiv = document.createElement('div');
+    //     loadingDiv.id = 'loading-animation';
+    //     loadingDiv.className = 'w-full flex mb-4 justify-start';
+        
+    //     const messageDiv = document.createElement('div');
+    //     messageDiv.className = 'max-w-[100%] p-4 rounded-lg bg-gray-100 text-gray-800 mr-auto rounded-bl-none loading-message';
+        
+    //     const contentDiv = document.createElement('div');
+    //     contentDiv.className = 'markdown-content prose';
+        
+    //     messageDiv.appendChild(contentDiv);
+    //     loadingDiv.appendChild(messageDiv);
+        
+    //     const chatContainer = document.getElementById('preview');
+    //     chatContainer.appendChild(loadingDiv);
+        
+    //     let charIndex = 0;
+    //     loadingAnimationTimer = setInterval(() => {
+    //         if (charIndex < loadingText.length) {
+    //             currentLoadingText += loadingText[charIndex];
+    //             charIndex++;
+    //         } else {
+    //             currentLoadingText = '';
+    //             charIndex = 0;
+    //         }
+    //         contentDiv.textContent = currentLoadingText;
+    //         chatContainer.scrollTop = chatContainer.scrollHeight;
+    //     }, 200); // 每200毫秒更新一次
+    // }
+
+    // function stopLoadingAnimation() {
+    //     if (loadingAnimationTimer) {
+    //         clearInterval(loadingAnimationTimer);
+    //         loadingAnimationTimer = null;
+    //     }
+    //     const loadingElement = document.getElementById('loading-animation');
+    //     if (loadingElement) {
+    //         loadingElement.remove();
+    //     }
+    // }
 
     // 發送消息的輔助函數
     function sendMessage(message) {

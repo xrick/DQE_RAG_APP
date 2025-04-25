@@ -271,18 +271,11 @@
             <button id="submit">送出</button>
         </div>
     </div>
-    <!-- 引入 JS -->
-    <script src="/static/js/ai-chat.js"></script> <!-- 確保路徑正確，如果 ai-chat.js 放在 static/js/ 下 -->
-    <!-- 或 <script src="ai-chat.js"></script> 如果在同目錄 -->
+    <script src="ai-chat.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("DOMContentLoaded 事件觸發，準備初始化..."); // <-- 添加 log
-        if (typeof initializeChatInterface === 'function') {
+      document.addEventListener('DOMContentLoaded', function() {
         initializeChatInterface();
-        } else {
-        console.error("錯誤：initializeChatInterface 函數未定義！");
-        }
-    });
+      });
     </script>
 </body>
 </html>
