@@ -1,0 +1,40 @@
+<div className="min-h-screen flex">
+    {/* Sidebar 區，左側導航列 */}
+    <div className="w-64 bg-white dark:bg-gray-800 shadow-lg">
+      {/* ...Sidebar 內容... */}
+    </div>
+
+    {/* 主內容區，橫向排版，將 #preview 靠左並增加高度 */}
+    <div id="main-content" className="flex-1 flex flex-col">
+        <main id="inner-content" className="flex-1 p-6">
+          {currentView === 'chat' && (
+            // 1. 以兩個並排區塊包住聊天UI（#preview 和 下方按鈕/輸入列）
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              
+              {/* ========== 調整區塊1：預覽顯示區(靠左)========== */}
+              <div
+                id="preview"
+                style={{
+                  minHeight: '400px',          // ★提升高度
+                  maxHeight: '60vh',
+                  marginRight: '0',
+                  backgroundColor: '#fff',
+                  flex: 4,                    // ★提高 flex 占比
+                  overflowY: 'auto',
+                }}
+                className="markdown-content"
+                // ...其餘屬性...
+              ></div>
+              {/* // ======= [註解] 上方為 主要內容區 #preview ，已加高且靠近 Sidebar ======= */}
+
+              {/* ========== 調整區塊2：chat 搜尋和輸入UI ========== */}
+              <div style={{ marginTop: '30px', flex: 1 }}> {/* ★使下方區塊往下移不貼底 */}
+                {/* search-threshold、search-threshold-label、精確搜尋、web搜尋按鈕、input 區塊 */}
+                {/* 可以將這些區塊複製自 ai-chat-content.html */}
+              </div>
+              {/* // ======= [註解] 下方為搜尋按鈕與輸入/送出，已與 preview 拉開距離 ======= */}
+            </div>
+          )}
+        </main>
+    </div>
+</div>

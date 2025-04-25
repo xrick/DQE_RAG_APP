@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亿道智能中心</title>
+    <!-- Tailwind 只作為範例，如無可將 class 替換一般 CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 標準圖示 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+<div class="min-h-screen flex">
+
+    <!-- ====== [註解] 左側 Sidebar 區塊，佔左欄 ====== -->
+    <div class="w-64 bg-white dark:bg-gray-800 shadow-lg flex-shrink-0 flex flex-col">
+        <div class="p-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="cpu" class="w-8 h-8 text-blue-500"></i>
+                <h1 class="text-xl font-bold dark:text-white">亿道智能中心</h1>
+            </div>
+        </div>
+        <nav class="mt-4">
+            <div class="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 bg-gray-100 dark:bg-gray-700">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span>服務主頁</span>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <!-- ====== [註解] Sidebar 結束 ====== -->
+
+    <!-- ====== [註解] 右側主內容區（聊天區塊），和Sidebar同排 ====== -->
+    <div id="main-content" className="flex-1 flex flex-col">
+                       
+        <main id="inner-content" className="flex-1 p-6">
+            {currentView === 'home' && (
+                <HomeContent onServiceClick={handleServiceClick} />
+            )}
+            {currentView === 'chat' && (
+                <div id="chat-main" dangerouslySetInnerHTML={{ __html: currentContent }} />
+            )}
+        </main>
+    </div>
+    <!-- ====== [註解] 主內容區結束 ====== -->
+
+</div>
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

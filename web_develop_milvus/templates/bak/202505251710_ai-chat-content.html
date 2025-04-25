@@ -98,16 +98,13 @@
         #preview {
             font-family: Microsoft JhengHei;
             font-size:16px;
-            min-height: 500px;    /* ★高度提升 */
-            /* max-height: 55vh; */
             flex: 3;
-            padding: 16px;
-            /* border: 1px solid #ddd; */
+            padding: 10px;
+            border: 1px solid #ddd;
             border-radius: 8px;
             overflow-y: auto;
             background-color: #ffffff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 32px;  /* ★拉開與下方間距 */
         }
         .input-section {
             font-family: Microsoft JhengHei;
@@ -116,8 +113,7 @@
             display: flex;
             gap: 10px;
             height:10vh;
-            margin-bottom: 18px;  /* 增加底部間距 */
-            margin-top: 15  px;
+            margin-bottom: 10px;  /* 增加底部間距 */
         }
         #editor {
             flex: 1;
@@ -171,8 +167,7 @@
         .search-buttons {
             display: flex;
             gap: 10px;
-            margin-bottom: 18px;
-            margin-top: 0;
+            margin-bottom: 10px;
         }
         
         /* 搜尋按鈕樣式 */
@@ -262,7 +257,7 @@
     <div class="container">
         <div id="preview"></div>
         <!-- 新增的按鈕區域 -->
-        <div class="search-buttons" style="display:flex; gap:10px; align-items: center;">
+        <div class="search-buttons">
             <div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px;">
                 <input type="range" id="search-threshold" min="0.1" max="1" step="0.01" value="0.3" style="width: 200px;">
                 <label id="search-threshold-label" style="margin-top: 5px; font-size: 12px; color: #555;">关联距离 : 0.3</label>
@@ -271,11 +266,23 @@
             <!--<button id="tag-search" class="search-button">标籤搜寻</button>-->
             <button id="web-search" class="search-button">包含外网搜寻</button>  
         </div>
-        <div class="input-section" style="display:flex; gap:10px; align-items: flex-start;">
-            <textarea id="editor" placeholder="请输入您的问题..."
-            style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; font-family:'Consolas', monospace; font-size:14px; line-height:1.5; height:120px; resize:none;"></textarea>
-            <button id="submit" style="padding: 10px 20px; background-color: #e0e0e0; color: #424242; border: none; border-radius: 5px; height:120px; cursor:pointer;">送出</button>
+        <div class="input-section">
+            <textarea id="editor" placeholder="请输入您的问题..."></textarea>
+            <button id="submit">送出</button>
         </div>
     </div>
+    <!-- 引入 JS -->
+    <script src="/static/js/ai-chat.js"></script> <!-- 確保路徑正確，如果 ai-chat.js 放在 static/js/ 下 -->
+    <!-- 或 <script src="ai-chat.js"></script> 如果在同目錄 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOMContentLoaded 事件觸發，準備初始化..."); // <-- 添加 log
+        if (typeof initializeChatInterface === 'function') {
+        initializeChatInterface();
+        } else {
+        console.error("錯誤:initializeChatInterface 函數未定義！");
+        }
+    });
+    </script>
 </body>
 </html>

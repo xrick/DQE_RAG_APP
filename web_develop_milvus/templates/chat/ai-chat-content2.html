@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仡道智能KB</title>
+    <!-- 指標CSS：如已用Tailwind可省略，否則CSS自行調整 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css"/>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
+    <style>
+        /* ===== #preview 高度提升與美化 ===== */
+        #preview {
+            font-family: Microsoft JhengHei;
+            font-size: 16px;
+            min-height: 350px;    /* ★高度提升 */
+            max-height: 55vh;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+            padding: 16px;
+            border-radius: 8px;
+            overflow-y: auto;
+            margin-bottom: 32px;  /* ★拉開與下方間距 */
+        }
+        /* 下方搜尋、按鈕、輸入區整體往下移不貼底 */
+        .search-buttons, .input-section {
+            margin-bottom: 18px;
+        }
+        .search-buttons {
+            margin-top: 0;
+        }
+        .input-section {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body style="margin:0; padding:0; background:#f8f9fa">
+    <div class="container" style="display: flex; flex-direction: column; height: 100vh; justify-content: flex-start;">
+
+        <!-- ===== [註解] #preview移至最上方、增高，與左欄主區塊對齊 ===== -->
+        <div id="preview">
+          <!-- Chat 回應內容會顯示於此 -->
+          <p style="color:#888">這裡會顯示聊天/問答內容預覽⋯</p>
+        </div>
+        <!-- ===== [註解] #preview區結束，下方為搜尋與輸入區 ===== -->
+
+        <!-- ===== [註解] 搜尋閾值、搜尋模式按鈕區塊 ===== -->
+        <div class="search-buttons" style="display:flex; gap:10px; align-items: center;">
+            <div style="display: flex; flex-direction: column; align-items: center; margin-left: 10px;">
+                <input type="range" id="search-threshold" min="0.1" max="1" step="0.01" value="0.3" style="width: 200px;">
+                <label id="search-threshold-label" style="margin-top: 5px; font-size: 12px; color: #555;">关联距离 : 0.3</label>
+            </div>
+            <button id="precise-search" class="search-button active" style="border:2px solid #bdbdbd; border-radius:20px; background:white; color:#757575; font-size:14px; padding: 0 14px; margin:0 2px;">知识库搜寻</button>
+            <button id="web-search" class="search-button" style="border:2px solid #bdbdbd; border-radius:20px; background:white; color:#757575; font-size:14px; padding: 0 14px;">包含外网搜寻</button>
+        </div>
+        <!-- ===== [註解] 搜尋/按鈕區塊結束 ===== -->
+
+        <!-- ===== [註解] 輸入與送出區，與下緣保持距離 ===== -->
+        <div class="input-section" style="display:flex; gap:10px; align-items: flex-start;">
+            <textarea id="editor" placeholder="请输入您的问题..." 
+                style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; font-family:'Consolas', monospace; font-size:14px; line-height:1.5; height:60px; resize:none;"></textarea>
+            <button id="submit" style="padding: 10px 20px; background-color: #e0e0e0; color: #424242; border: none; border-radius: 5px; cursor:pointer;">送出</button>
+        </div>
+        <!-- ===== [註解] 輸入區結束 ===== -->
+    </div>
+</body>
+</html>
