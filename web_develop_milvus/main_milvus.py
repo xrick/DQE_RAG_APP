@@ -36,14 +36,7 @@ logging.basicConfig(
 # 初始化FastAPI應用及其它程式起始需要初始的程式碼
 ##########################################
 
-# 加載環境變數
-load_dotenv()
-encoding_model_name = os.getenv("EMBEDDEDING_MODEL")
-encoding_model_path = os.getenv("EMBEDDEDING_MODEL_PATH")
-retrieval_num = 10;
-LLM_MODEL='deepseek-r1:7b'#'phi4:latest';
-logging.info(f"Encoding model: {encoding_model_name}");
-logging.info(f"Encoding model path: {encoding_model_path}");
+
 '''
 start of fastapi startup: lifespan
 '''
@@ -52,9 +45,18 @@ start of fastapi startup: lifespan
 async def lifespan(app: FastAPI):
     # 全局變量
     # global faiss_retriever, faiss_retriever_qsrc, faiss_retriever_module, dfObj, dfObj_aitrial, llm
-    global milvus_qry, llm, keys_order, _outputfields, _collectionName, headers
+    global milvus_qry, llm, keys_order, _outputfields, _collectionName, headers, retrieval_num
     try:
         logging.info("開始初始化服務...")
+        
+        # 加載環境變數
+        load_dotenv()
+        encoding_model_name = os.getenv("EMBEDDEDING_MODEL")
+        encoding_model_path = os.getenv("EMBEDDEDING_MODEL_PATH")
+        retrieval_num = 10;
+        LLM_MODEL='deepseek-r1:7b'#'phi4:latest';
+        logging.info(f"Encoding model: {encoding_model_name}");
+        logging.info(f"Encoding model path: {encoding_model_path}");
 
         logging.info("初始化內部資料...")
         _dbName="dqe_kb_db"
@@ -71,7 +73,7 @@ async def lifespan(app: FastAPI):
         headers = ["问题瞭型","模块", "严重度(A/B/C)", "问题现象描述", "原因分析", "改善对策", "经验萃取"]
         _outputfields = ["problemtype", "module", "severity", "causeAnalysis", "description", "improve", "experience"]
         # 初始化milvus client object
-        _embedding_path = "/home/mapleleaf/LCJRepos/Embedding_Models/jina-embeddings-v2-base-zh"
+        _embedding_path = encoding_model_path#"/home/mapleleaf/LCJRepos/Embedding_Models/jina-embeddings-v2-base-zh"
         logging.info(f"encoding_model_path is {_embedding_path}")
         milvus_qry = MilvusQuery(database=_dbName,embedding_model_path=_embedding_path)
         milvus_qry.load_collection(collection_name=_collectionName)
