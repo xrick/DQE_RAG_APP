@@ -1,8 +1,22 @@
-請幫我設計一個銷售 RAG 網頁應用程式：
-<main_requirements>
-- 有兩個 NB 型號：AG958 和 AKK839，請閱讀 AG958.txt 和 AKK838.txt
-- Models_Questions.txt 中有一些銷售相關問題
-- 請撰寫詳盡、指令明確、能準確回答銷售問題的提示，讓LLM能準確回答問題
-- 請產生統一的回答格式，並以json的格式回傳。
-- 系統再依據回傳的json，再產生markdown語法呈現給使用者。
-</main_requirements>
+<Project>
+  <target>請幫我設計一個銷售 RAG 網頁應用程式</target>
+
+  <main_requirements>
+    - 有兩個 NB 型號：AG958 和 AKK839，請閱讀 AG958.txt 和 AKK838.txt
+
+    - Models_Questions.txt 中有一些銷售相關問題.
+
+    - AG958 與 AKK839 筆記型電腦規格對照分析.md 包含了銷售相關問題的部份答案
+
+    - 請撰寫詳盡、指令明確、能準確回答銷售問題(以二個NB型號進行比較)的提示，讓LLM能準確回答問題
+
+    - 請產生統一的回答格式，並以json的格式回傳。
+
+    - 系統再依據回傳的json，再產生markdown語法呈現給使用者。
+  </main_requirements>
+
+  <Implementation>
+
+  </Implementation>
+
+</Project>
