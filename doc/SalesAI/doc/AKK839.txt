@@ -1,0 +1,228 @@
+[Product Specification]
+Stage Version: EVT_v1.0
+
+[Model Information]
+Model Name: AKK839
+Part Number (P/N): EM-839-ND14AKK
+ID: Public
+
+[Hardware Versions]
+Motherboard (MB) Version: v1.0
+Daughterboard (DB) Version: v1.0
+
+[Development Stage]
+Planning: 2024/06/14 – 2024/07/29
+Kick-off: 2024/07/30
+E2E: 2024/07/31 – 2024/08/31
+EVT: 2024/09/01 – 2024/12/01
+DVT: N/A
+PVT: 2024/12/01 – 2025/02/28
+MP: 2025/02/28 – 2025/03/31
+
+[Project Management]
+PM Owner: HQ PM – 梁森 / TW – Jasper
+Client (Customized): N/A
+
+
+
+[Structure Configuration]
+
+[Structure]
+Form: Notebook
+Dimensions:
+- 14": 313.65 x 220.8 x 17.95 mm
+- 16": TBD
+Material Options:
+- Option 1: A/D Cover – Aluminum alloy, B Cover – Plastic, C Cover – Aluminum-Magnesium alloy
+- Option 2: A/D Cover – Aluminum alloy, B/C Cover – Plastic
+Hinge: 180-degree hinge
+Weight: 1.8 kg
+
+[LCD]
+Dimension: 14", 16:10
+Resolution Options:
+- Default: 1920 x 1200 FHD, Anti-Glare, 120Hz (TCL)
+- Option 1: 2880 x 1800 2.8K, Anti-Glare, 120Hz (TCL)
+
+[Touch Panel]
+Form: N/A (Supported by PCBA)
+
+[IO Interface]
+
+[Left MB IO]
+- 1 x USB 3.2 Gen2, 10Gbps, Type-C (PD / DP1.4 / USB)
+- 1 x HDMI 2.1 TMDS, Type-A (Supports 4K@60Hz)
+- 1 x USB 3.2 Gen1, 5Gbps, Type-A
+- 1 x USB 4.0, 40Gbps, Type-C (DP1.4 / USB)
+- 1 x OCULINK (Optional)
+
+[Right DB IO]
+- Default: 1 x 2.5G RJ45 Giga LAN (10/100/1000/2500Mbps)
+- Option 1: 1 x 1G RJ45 Giga LAN (10/100/1000Mbps, without AMD Dash)
+- 2 x USB 3.2 Gen1, 5Gbps, Type-A
+- 1 x 3.5mm Combo Audio Jack (EU/USA compliant)
+- 1 x Micro SD Card Slot (Supports SDSC, SDHC, SDXC up to 2TB)
+
+[Rear MB IO]
+- N/A
+
+[LED Indicators]
+Power On/Off/Sleep:
+- On: White light
+- Off: No light
+- Sleep: Breathing light
+
+Wi-Fi/Bluetooth: N/A
+Battery/Charging:
+- Charging: Orange light
+- Full: Green light
+- Off: No light
+
+Webcam Module:
+- On: White light
+- Off: No light
+
+SD LED: N/A
+Caps Lock:
+- On: White light
+- Off: No light
+
+Num Lock: N/A
+
+[Power Button]
+Type: Separated power button key (on DB)
+
+[Keyboard]
+Backlight Options:
+- Default: Single white LED backlight
+- Option 1: No backlight
+Matrix: US / UK
+Others: N/A
+
+[Web Camera]
+Front Camera Options:
+- Default: 720P / 1MP HD Webcam with IR, 30 fps, with 2x mics, LED
+- Option 1: 1080P / 2MP FHD Webcam with IR, 30 fps, with 2x mics, LED
+- Option 2: 5MP Webcam with IR, with 2x mics, LED
+Camera Shutter: Included
+Rear: N/A
+Windows Hello: Supported
+
+[Touchpad]
+Interface Type: I2C / HID
+Size: TBD (suggested to maximize touch area)
+Features:
+- Multi-touch support, gestures, scroll function
+- Optional 1: Glass material (C cover – aluminum-magnesium)
+- Optional 2: Plastic material (C cover – plastic)
+
+[Fingerprint]
+Location: Integrated into power button
+Interface: USB, Security Level 3
+Windows Hello: Supported
+Others: One-click power-on supported
+
+[Audio]
+Speakers: 2 x Built-in Speakers (2 x 4Ω / 2W)  
+Note: Recommended to fine-tune with HQ speaker
+Microphones: 2 x Built-in digital mics (on webcam module), HD Audio
+Others: N/A
+
+[Battery]
+Type: Lithium-ion polymer, fast charging optional
+Capacity:
+- 14": 1 x 80Wh, 11.55V, Smart battery (fast charging supported)
+- 16": 1 x 99Wh
+Note: Battery charges up to 80% in less than 1 hour
+Certification: CB, MSDS, UN38.3, Air transport report
+Battery Life: >10 hours (per MSFT CTS testing, TBD)
+
+
+
+[Hardware Configuration]
+
+[CPU]
+Module: AMD Zen5, Kraken Series
+TDP: 45W (supports up to 60W)
+Supported SKUs:
+- Ryzen™ 5: TDP 35W–54W
+- Ryzen™ 7: TDP 35W–54W
+- Ryzen™ 9: TDP 35W–54W
+
+[GPU]
+Model: AMD Radeon™ 880M / 860M
+
+[Memory]
+RAM: 2 x SO-DIMM DDR5, 5600MT/s
+Supported Capacity: 16GB / 32GB / 64GB / 128GB
+
+[LCD Connector]
+Port: eDP
+
+[Storage]
+SSD:
+- 1 x M.2 2280 PCIe Gen4 (Lane 4) / NVMe SSD, up to 8TB (2 x 4TB)
+- 1 x M.2 2280 PCIe Gen3 (Lane 4) / NVMe SSD, up to 8TB
+
+[Wi-Fi]
+Options:
+- Default: 1 x M.2 Key-E 2230 – WiFi 6E + Bluetooth 5.2
+- Option 1: 1 x M.2 Key-E 2230 – WiFi 6 + Bluetooth 5.2
+- Option 2: 1 x M.2 Key-E 2230 – WiFi 5 + Bluetooth 5.2
+
+[SD Card Slot]
+Slot: 1 x Micro SD Card (USB 2.0 protocol)
+
+[LTE]
+Status: Not Supported
+
+[Sensors]
+G-sensor: Not Supported
+Hall Sensor: Supported (TBD)
+
+[Thermal Solution]
+Cooling: Dual Fan
+TDP: 45W
+
+[TPM]
+Interface Type:
+- Default: AMD Pluton (implemented in system firmware, fTPM 2.0)
+- Option 1: Hardware chip on motherboard, dTPM 2.0 (Discrete TPM)
+
+[AMD Dash]
+Type:
+- Default: AMD Dash
+- Option 1: Non-AMD Dash
+
+[RTC]
+Connector: Supported on PCBA
+
+
+
+[Wireless Network Configuration]
+
+[Wi-Fi]
+AMD Dash Supported Modules:
+- Default: RZ616 (AMD), Wi-Fi 6E Dual-band 2Tx2R, 802.11ax + Bluetooth 5.2, on M.2 module  
+  Major Chipset: MediaTek MT7922A12L
+- Option 1: Intel AX210, Wi-Fi 6E 2Tx2R 802.11ax + BT 5.3, on M.2 module
+
+Non-AMD Dash Options:
+- Option 1: AzureWave AWXB591NF, Wi-Fi 6E 2Tx2R, BT 5.3, M.2 2230  
+  Major Chipset: MT7922AEA
+- Option 2: AWXT2KV2103 (HSF_RZ616), Wi-Fi 6E 2Tx2R + Bluetooth v2.1 / 4.2 / 5.2, M.2 2230
+- Option 3: FN-LINK 6252M-PUB, Wi-Fi 6 Dual-band 2T2R 802.11ax (2.4GHz / 5GHz) + Bluetooth 5.2, M.2 2230  
+  Major Chipset: RTL8852BE-CG
+
+Others: N/A
+
+[LAN]
+- Default: 1 x 2.5G RJ45, Giga LAN 10/100/1000/2500Mbps (on DB)
+- Option 1: 1 x 1G RJ45, Giga LAN 10/100/1000Mbps (on DB, without AMD Dash)
+
+[LTE]
+Status: Not Supported
+
+[Bluetooth]
+Status: Supported
+Version: Bluetooth 4.2 / 5.2

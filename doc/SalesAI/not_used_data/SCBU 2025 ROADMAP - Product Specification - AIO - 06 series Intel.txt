@@ -1,0 +1,77 @@
+🧾【Product Overview】
+Metadata Tags: category:AIO, series:06 series, model:IDL06, form_factor:Integrated Monitor
+
+This product is part of the AIO 06 Series, with model name IDL06, and is an All-in-One (AIO) device integrating PC components into a monitor chassis. It is designed with various high-performance and expandability options for business or general use.
+
+🔧【Processor】
+Metadata Tags: component:CPU, platform:AlderLake,RaptorLake, socket:LGA, TDP:45W, generation:12th,13th
+
+Supports the following Intel® mobile processors:
+12th Gen Alder Lake-U/P/H i5-12450H (TDP up to 45W)
+13th Gen Raptor Lake-U/P/H i5-13420H (TDP up to 45W)
+
+🖼️【Graphics】
+Metadata Tags: component:GPU, type:integrated, brand:Intel, model:UHD Graphics
+
+Integrated graphics via Intel® UHD Graphics, suitable for standard productivity and media playback.
+
+🧠【Memory】
+Metadata Tags: component:RAM, slots:2, type:DDR4, max:64GB, speed:3200MHz
+
+Equipped with 2 x SO-DIMM DDR4 slots, supporting up to 64GB of RAM at 3200MHz.
+
+💾【Storage】
+Metadata Tags: component:Storage, interface:M.2, key:Key M, size:2280, type:PCIe3.0,SATA
+
+Includes 1 x M.2 Key M slot (2280 size), supporting PCIe Gen3 x4 or SATA SSDs.
+
+🔐【Security】
+Metadata Tags: component:Security, TPM:fTPM2.0,dTPM2.0
+
+Supports both fTPM 2.0 and dTPM 2.0 for enhanced platform security.
+
+🖥️【Display】
+Metadata Tags: component:Display, size:23.8in,27in, resolution:1920x1080, type:IPS, ratio:16:9
+
+Available with 23.8-inch or 27-inch 16:9 IPS displays, both offering 1920x1080 Full HD resolution.
+
+📶【Wireless Connectivity】
+Metadata Tags: component:Wi-Fi, interface:M.2, slot:2230, key:E
+
+Includes 1 x M.2 Key E 2230 slot for Wi-Fi module expansion.
+
+⛓️【Extension / I/O Ports】
+Metadata Tags: component:I/O, port:HDMI,DP,USB,Type-C,OCulink,RJ45, feature:HDMI IN/OUT,PD,Fingerprint
+
+Extension and I/O features:
+1 x HDMI 1.4 Type-A (supports HDMI IN & OUT with toggle switch)
+1 x DisplayPort 1.2 (optional)
+1 x USB 2.0
+2 x USB 3.0
+2 x USB 3.2 Gen2 (10Gbps)
+1 x Type-C port, configurable as:
+
+Full function (USB 3.2 Gen2 + DisplayPort 1.2 + Power Delivery)
+Or USB 3.2 Gen2 data-only version
+
+1 x OCulink (optional)
+1 x RJ45 Gigabit Ethernet
+1 x 3.5mm audio combo jack
+1 x Power button with optional fingerprint sensor
+1 x Mute button
+1 x DC IN (φ5.5×2.5mm), supports 12V–19V input
+
+⌨️【Keyboard and Mouse Support】
+Metadata Tags: component:Input, interface:USB,Bluetooth, mode:Wired,Wireless
+
+Supports expandable wired or wireless keyboard/mouse, via USB or Bluetooth interfaces.
+
+📏【Dimensions & Weight】
+Metadata Tags: component:Dimension, size:23.8in,27in, status:TBD
+
+Dimensions and weights for 23.8" and 27" versions are TBD (to be determined).
+
+🖥️【Operating System】
+Metadata Tags: component:OS, system:Windows 11
+
+Ships with Windows 11 pre-installed.

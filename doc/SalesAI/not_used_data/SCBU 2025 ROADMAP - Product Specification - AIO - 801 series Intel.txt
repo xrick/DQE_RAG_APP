@@ -1,0 +1,95 @@
+🧾【Product Overview】
+Metadata Tags: category:AIO, series:801 series, brand:Intel, models:IDN801,IG801
+
+This product belongs to the 801 Series All-In-One (AIO) family and includes the models IDN801 and IG801.
+It is designed for entry-level and embedded computing use cases, featuring compact form factors and affordable Intel processors.
+
+🔧【Processor】
+Metadata Tags: component:CPU, brand:Intel, architecture:AlderLake-N,GeminiLakeRefresh,JasperLake, models:N100,N4020,N4120,N5030,N5000,N5095
+
+Supports the following Intel® low-power processors:
+Alder Lake-N N100
+
+Gemini Lake Refresh:
+Celeron® N4020 / N4120
+Pentium® N5030
+
+Jasper Lake:
+N5000 / N5095
+
+🖼️【Graphics】
+Metadata Tags: component:GPU, type:integrated, brand:Intel, models:UHD Graphics 600,605
+
+Integrated graphics capabilities vary by CPU:
+N4020 / N4120 → Intel® UHD Graphics 600
+N5030 → Intel® UHD Graphics 605
+
+🧠【Memory】
+Metadata Tags: component:RAM, slots:1, type:DDR4, capacity:4GB,8GB
+
+Equipped with 1 x SO-DIMM DDR4 slot
+Supports 4GB or 8GB DDR4 memory
+
+💾【Storage**
+Metadata Tags: component:Storage, interface:M.2,SATA, key:E, form:2280, HDD:2.5inch, max_HDD:2TB
+
+1 x M.2 2280 NVMe SSD slot (Key E)
+1 x 2.5” SATA3 HDD (optional), supports up to 2TB
+
+🔐【Security】
+Metadata Tags: component:Security, TPM:fTPM2.0
+
+Includes support for fTPM 2.0 for firmware-based security.
+
+🖥️【Display】
+Metadata Tags: component:Display, size:21.5in,23.8in, resolution:1920x1080, type:IPS, ratio:16:9
+
+Display options include:
+21.5" or 23.8" 16:9 IPS panels
+
+Resolution: 1920x1080 (Full HD)
+
+📶【Wireless Connectivity】
+Metadata Tags: component:Wi-Fi, standard:802.11ac,bgn, bluetooth:supported, module:onboard, chip:RL8723BU
+
+Wireless support:
+802.11 ac/a/b/g/n or b/g/n + Bluetooth
+
+Onboard module: Realtek RL8723BU (12×12)
+
+⛓️【Extension / I/O Ports】
+Metadata Tags: component:I/O, ports:USB,HDMI,TypeC,TF,RJ45, type:USB3.2,USB2.0,Audio
+
+Rear and side I/O features include:
+4 x USB 3.2 Gen1 ports
+1 x USB 2.0 or Type-C port (optional)
+1 x HDMI 1.4
+1 x 3.5mm audio combo jack
+1 x TF card socket
+1 x RJ45 Gigabit Ethernet
+1 x DC IN (φ5.5×2.5mm)
+
+⌨️【Keyboard and Mouse Support】
+Metadata Tags: component:Input, interface:USB,Bluetooth, mode:Wired,Wireless
+
+Supports expandable wired or wireless keyboards and mice via USB or Bluetooth.
+
+📏【Dimensions & Weight】
+Metadata Tags: component:Dimension, component:Weight
+
+21.5" model:
+
+Size: 493.7×302.3×6.6~43.1mm
+
+Weight: ≈2815g
+
+23.8" model:
+
+Size: 541.6×332.2×6.6~43.1mm
+
+Weight: ≈2429g
+
+🖥️【Operating System】
+Metadata Tags: component:OS, system:Windows 11,Ubuntu
+
+Compatible with Windows 11 and Ubuntu Linux.

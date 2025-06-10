@@ -1,0 +1,120 @@
+[Product Model]
+AFR19
+
+[System Physical Standard Configuration]
+
+[Product Form]
+Form Factor: mATX motherboard
+Color: Flat Black
+Dimensions: 244 x 220 mm, PCB: 8 layer, OSP
+
+[System Hardware Configuration]
+
+[CPU]
+Model: AMD Ryzen 9 9955HX3D
+TDP: 145W
+Fire range: FL1
+
+[Chipset]
+PCH: N/A
+
+[Graphics]
+Graphics: AMD Radeon 610M
+
+[Memory]
+Type: SO-DIMM
+Slots: 2
+Channel: Dual Channel
+Max Capacity: 96GB
+Speed: DDR5 5600MT/s
+
+[Super IO]
+Chip: IT8625E
+
+[Storage]
+- 1 x M.2 NVMe 22110/2280/2242 (Key M) SSD slot (PCIe 5.0 x4)
+- 1 x M.2 NVMe 2280/2242 (Key M) SSD slot (PCIe 4.0 x2)
+- 2 x SATA 6Gb/s ports
+
+[Sound Card]
+Codec: Realtek ALC897
+Rear IO: 3 jacks (Line-in, Line-out, MIC)
+Front Header: 1 x F_Audio header
+
+[Security & Reliability]
+Support: fTPM2.0 / dTPM2.0
+
+[Network Connections]
+
+[Wi-Fi / Bluetooth]
+Module Slot: 1 x M.2 slot 2230 (Key E), PCIe
+Wi-Fi Support: Wi-Fi 7 and Wi-Fi 6
+
+[Ethernet Network]
+Controller: 1 x Realtek RTL8125BG-CG 2.5G Ethernet Controller
+
+[Interface Configuration]
+
+[Rear Panel I/O Ports]
+HDMI: 1 x HDMI 2.1 TMDS (no Redriver)
+DP: 1 x DP 1.4 (colay VGA)
+USB 2.0: 2 x USB 2.0 ports
+RJ45: 1 x RJ45 LAN connector (with TVS & Surge circuit design; 2KV/6KV)
+Audio: 1 x Audio jack (3.5mm Line-in, 3.5mm Line-out, 3.5mm MIC)
+USB 3.2: 2 x USB 3.2 Gen2 Type-A 10Gbps (2 ports, 1.5A with power sharing)
+Type-C: 1 x Type-C port (USB 3.2 Gen2 10Gbps)
+
+[Internal I/O Connectors]
+
+Fan and Cooling:
+- 1 x H1*4 CPU FAN with PWM SMART FAN controller
+- 3 x H1*4 System FAN headers (PWM with SMART FAN controller)
+
+Power:
+- 1 x 24-pin ATX Power Supply connector
+- 2 x 8-pin ATX 12V Power connectors
+
+Storage:
+- 2 x M.2 slots (Key M) SSD, type 2280
+- 2 x SATA 6Gb/s ports (via USB to SATA chip)
+
+USB:
+- 1 x USB 2.0 header (supports 2 additional USB 2.0 ports)
+- USB 2.0 header for SD card reader, multi-in-one card reader, smart card reader
+- 1 x USB 3.2 Gen1 header (supports 2 additional USB 3.0 ports)
+
+PCIe Slot:
+- 1 x PCIe Gen5 x16 slot
+- 1 x PCIe Gen4 x1 slot
+
+Other Headers and Connectors:
+- 1 x RTC connector (CR2032, cable not included)
+- 1 x 4-pin ARGB header (+5V, Data, NC, GND)
+- 2 x DDR5 SO-DIMM sockets
+- 1 x H3*1 Clear CMOS header (with jumper)
+- 1 x M.2 slot (Key E) Wi-Fi, type 2230
+- 1 x F_Audio header
+- 1 x Serial port header (COM2) [preferably near rear IO]
+- 1 x H4*1 internal speaker header (Buzzer)
+- 1 x F_Panel 9-pin header (Reset, HD LED, Power LED, Power On/Off)
+
+[Software Configuration]
+
+[BIOS]
+Type: AMI BIOS
+Description: UEFI is integrated, supports AMI & DMI
+
+[Operating System]
+Supported Versions: Windows 11 Home / Pro 64-bit
+
+[Modification History]
+V1.1   Removed GPIO header  
+V1.2   1. Removed RTL8126 5G Ethernet Controller
+       2. Removed Auto Power On header
+       3. Removed BIOS write protect connector
+       4. Changed to Super IO solution
+V1.3   Removed one M.2 SSD slot
+V1.4   1. Removed Type E slot
+       2. Added one M.2 SSD slot
+       3. Added one 8-pin power connector
+V1.5   Updated ARGB description

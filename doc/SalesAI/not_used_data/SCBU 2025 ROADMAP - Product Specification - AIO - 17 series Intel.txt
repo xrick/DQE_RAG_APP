@@ -1,0 +1,79 @@
+🧾【Product Overview】
+Metadata Tags: category:AIO, series: 17 series, form_factor:Thin Mini ITX, model:IDL17F, IDL17F-R5
+
+This product belongs to the All-in-One (AIO) category and is built on a Thin Mini ITX motherboard form factor.
+It includes multiple model variants:
+IDL17F/IDL17F-R5
+
+These models share a common core specification but may vary slightly depending on the configuration or market segment.
+
+🔧【Processor】
+Metadata Tags: component:CPU, platform:AlderLake, socket:LGA1700, TDP:65W
+
+This device supports Intel® Alder Lake-S processors (TDP 65W) using Socket LGA1700. Compatible CPU models include:
+Intel® Core™ i3-12100
+Intel® Core™ i5-12400
+Intel® Core™ i7-12700
+Intel® Pentium® Gold G7400
+Intel® Celeron® G6900
+
+🧩【Chipset】
+Metadata Tags: component:Chipset, platform:AlderLake,RaptorLake, chipset:H610,B760
+
+Compatible with H610 and B760 chipsets, supporting both Alder Lake-S and Raptor Lake-S generations.
+
+🖼️【Graphics】
+Metadata Tags: component:GPU, type:integrated, brand:Intel, model:UHD Graphics
+
+Integrated graphics via Intel® UHD Graphics for basic multimedia and productivity tasks.
+
+🧠【Memory】
+Metadata Tags: component:RAM, type:DDR4, slots:2, max:64GB, optional:DDR5
+
+Supports 2x SO-DIMM DDR4 3200MHz slots, up to 64GB total RAM.
+(Model IDL17F-R5 supports DDR5 instead of DDR4.)
+
+💾【Storage】
+Metadata Tags: component:Storage, NVMe:M.2, SATA:SATA3, max_NVMe:2TB, max_SATA:4TB
+
+1x M.2 2280 NVMe SSD slot (PCIe Gen3 x4 or SATA) supporting up to 2TB
+2x SATA3 ports, supporting up to 4TB total (optional)
+
+🔐【Security】
+Metadata Tags: component:Security, TPM:fTPM2.0,dTPM2.0
+
+Supports fTPM 2.0 and dTPM 2.0 for hardware-level security.
+
+📶【Wireless Connectivity】
+Metadata Tags: component:Wi-Fi, interface:M.2, slot:2230, key:E
+
+Includes 1x M.2 2230 Key E slot for Wi-Fi module installation.
+
+🔌【Back Panel I/O】
+Metadata Tags: component:I/O, interface:HDMI,VGA,USB,RJ45, USB:3.2Gen1,2.0, audio:3.5mm, power:DC
+
+Back panel ports include:
+
+1x HDMI 1.4 Type-A
+1x VGA or DisplayPort 1.2
+2x USB 2.0
+2x USB 3.2 Gen1
+1x RJ45 (1Gbps Ethernet)
+1x 3.5mm microphone jack
+1x 3.5mm headphone jack
+1x φ5.5×2.5mm DC power input
+
+📏【Physical Dimensions】
+Metadata Tags: component:Dimension, size:170x170mm
+
+The system measures 170mm x 170mm, indicating a compact form factor suitable for embedded or industrial applications.
+
+🖥️【Operating System】
+Metadata Tags: component:OS, system:Windows 11
+
+Compatible with Windows 11 operating system.
+
+🔋【Power Supply】
+Metadata Tags: component:Power, input:19V, connector:5.5x2.5mm, current:4.74A,6.32A
+
+Powered via DC input φ5.5×2.5mm at 19V, supporting 4.74A or 6.32A current depending on the adapter.

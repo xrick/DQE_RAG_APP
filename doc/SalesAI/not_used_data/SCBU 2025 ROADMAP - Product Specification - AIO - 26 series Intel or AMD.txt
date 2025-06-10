@@ -1,0 +1,76 @@
+🧾【Product Overview】
+Metadata Tags: series:26 series, category:AIO, form_factor:Thin Mini ITX, models:IDL27F,IDL27G,IDL27R5,ARB27F,ARB27LPR5,MTL27,IDX27,IDX27C
+
+This product belongs to the 26 Series AIO systems, supporting both Intel and AMD platforms. It uses the Thin Mini ITX form factor and is available in the following models:
+
+IDL27F / IDL27G / IDL27R5
+ARB27F / ARB27LPR5
+MTL27 / IDX27 / IDX27C
+
+🔧【Processor】
+Metadata Tags: component:CPU, brand:Intel,AMD, platform:AlderLake,AMD Phoenix, TDP:28-45W, type:Mobile
+
+Supports a wide range of processors:
+Intel® Alder Lake P/H/HX series with TDP between 28W and 45W, or AMD Phoenix H series processors
+
+🖼️【Graphics】
+Metadata Tags: component:GPU, type:integrated, brand:Intel,AMD, model:UHD Graphics,Radeon Graphics
+
+Integrated graphics options include:
+
+Intel® UHD Graphics or AMD Radeon™ Graphics
+
+🧠【Memory】
+Metadata Tags: component:RAM, slots:2, type:DDR4,DDR5,LPDDR5, max:64GB, speed:3200MHz
+
+2 x SO-DIMM DDR4 slots, up to 64GB DDR4 3200MHz
+
+Model-specific memory support:
+
+MTL27 / ARB27F: supports DDR5
+ARB27LPR5: supports LPDDR5
+
+💾【Storage】
+Metadata Tags: component:Storage, interface:M.2,SATA3, key:M, form:2280/2260/2242, max:2TB
+
+1 x M.2 NVMe SSD slot (Key M), supports PCIe or SATA, and accommodates 2280 / 2260 / 2242 form factors (up to 2TB).
+2 x SATA3 ports (optional)
+
+🔐【Security】
+Metadata Tags: component:Security, TPM:dTPM2.0,fTPM2.0
+
+Equipped with hardware-level security support: dTPM 2.0 and fTPM 2.0.
+
+📶【Wireless Connectivity】
+Metadata Tags: component:Wi-Fi, slot:M.2 2230, key:E, interface:PCIe+USB
+
+Provides 1 x M.2 2230 Key E slot for Wi-Fi modules, with PCIe + USB interface.
+
+⛓️【Back Panel I/O Ports】
+Metadata Tags: component:I/O, port:HDMI,VGA,DP,USB,RJ45,Audio, note:model_specific
+
+Rear I/O includes:
+1 x HDMI 1.4 Type-A
+1 x mini HDMI (specific to IDL27 models for 4K LCD support)
+1 x VGA or DisplayPort (co-lay with COM port)
+2 x USB 2.0 ports (IDL27F co-lay with RJ45)
+2 x USB 3.2 Gen1 ports
+1 x RJ45 1000Mbps LAN
+1 x 3.5mm microphone jack
+1 x 3.5mm headphone jack
+1 x DC power input (φ5.5×2.5mm)
+
+📏【Dimensions】
+Metadata Tags: component:Dimension, size:170x170mm
+
+Compact board dimensions of 170mm x 170mm.
+
+🖥️【Operating System】
+Metadata Tags: component:OS, system:Windows 11, edition:Pro,Home
+
+Compatible with Windows 11 Home and Windows 11 Pro editions.
+
+🔋【Power Supply】
+Metadata Tags: component:Power, input:DC, voltage:19V, current:6.32A, connector:5.5x2.5mm
+
+Powered by DC input (φ5.5×2.5mm), supporting 19V / 6.32A.

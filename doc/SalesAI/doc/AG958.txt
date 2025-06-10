@@ -1,0 +1,244 @@
+[Product Specification]
+Stage Version: MP_v1.1
+
+[Model Information]
+Model Name: AG958
+Part Number (P/N): 
+- EM-958-NM15AG-X??
+- EM-958-NM16AG-X??
+ID: Standard
+
+[Hardware Versions]
+Motherboard (MB) Version: v3.0
+Daughterboard (DB) Version: v1.0?
+
+[Development Stage]
+Planning: N/A
+Kick-off: 2022/09/30
+EVT: 2022/10/01 – 2023/01/27
+DVT: 2023/01/28 – 2023/04/15
+PVT: 2023/04/15 – 2023/06/08
+Pilot Run: N/A
+MP: 2023/06/18
+
+[Project Management]
+PM Owner: Jerry
+Client (Customized): 玄派 / Corsair / Blue Morning
+
+
+
+[Structure]
+Form: Gaming Notebook
+Dimensions: 
+- 367.6 x 265.9 x 19.9 mm (RX 6650M)
+- 367.6 x 265.9 x 21.9 mm (RX 6650M XT)
+Material / Surface: 
+- A/C/D Cover: Metal (Anodized)
+- B Cover: Plastic (Textured)
+Hinge: 140-degree hinge
+Weight: ~2.3 kg (5.08 lb)
+
+[LCD]
+Dimensions: 
+- 15.6" 16:9
+- 16.1" 16:9
+Resolution Options:
+- 15.6" 1920×1080 FHD, 144Hz, FreeSync, PSR
+- 16.1" 1920×1080 FHD, 144Hz, FreeSync, PSR
+- 16.1" 2560×1440 QHD, 144Hz, FreeSync, PSR
+Note: Narrow bezel (5.5 mm) for 16.1"
+
+[Touch Panel]
+Form: N/A
+
+[IO Interface]
+[Left DB IO]
+- 1 x 3.5mm MIC jack
+- 1 x 3.5mm standard headphone jack
+- 1 x USB 3.2 Gen2, 10Gbps, Type-A
+
+[Right MB IO]
+- 1 x Kensington lock slot
+- 1 x USB 3.2 Gen2, 10Gbps, Type-A
+- 1 x USB4.0, 40Gbps, full function, Type-C (100W PD, Data, DisplayPort 1.4)
+- 1 x Fingerprint reader
+
+[Rear MB IO]
+- 1 x 7.5mm DC-IN port
+- 1 x RJ45 Giga LAN (10/100/1000Mbps)
+- 1 x HDMI 2.1 Type-A (Supports 8K@60Hz)
+- 1 x USB 3.2 Gen2 Type-C (10Gbps, Data, DisplayPort 1.4)
+
+[LED Indicators]
+Power: 
+- On: Blue light
+- Sleep: Breathing light
+- Off: No light
+
+WiFi/Bluetooth: N/A  
+Battery/Charging:
+- Charging: Red light
+- Full: Green light
+- Off: No light
+
+Webcam Module:
+- On: White light
+- Off: No light
+
+SSD LEDs: N/A  
+Caps Lock:
+- On: White light
+- Off: No light
+
+Num Lock:
+- On: White light
+- Off: No light
+
+[Power Button]
+Type: Separated physical power button key
+
+[Keyboard]
+Backlight Options:
+- Default: Single color
+- Option 1: 4-Zone RGB
+- Option 2: Per-key RGB
+Matrix: US/UK
+Others: 336 x 105 x 3.8 mm
+
+[Web Camera]
+Front: 
+- 2.0MP (1080P), 2 x Mic, LED
+- Supports 30fps
+- Privacy: White LED on when camera is disabled
+Shutter: Included
+Rear: N/A
+Windows Hello: Optional
+
+[Touchpad]
+Interface: I2C (8-pin)
+Size: 119 ± 0.3 mm x 74 ± 0.3 mm
+Features: Multi-touch, gestures, scroll function
+
+[Fingerprint]
+Location: Right-side IO port
+Interface: USB, Security Level 2 (GF3206 + GM188)
+Windows Hello: Supported (default gestures)
+
+[Audio]
+Speakers: 
+- 4 x Built-in (2 x 4Ω/2W, 2 x 8Ω/1W)
+Microphones: 
+- 2 x Digital mics (on webcam module)
+Others: N/A
+
+[Battery]
+Type: Lithium-ion polymer
+Capacity: 80.08Wh (15.4V / 5200mAh), 4S1P Smart battery
+Certifications: CE, FCC, CCC, CB, MSDS, UN38.3, Air transport report
+Battery Life: Up to 10 hours
+
+
+[Hardware Configuration]
+[CPU]
+Module: AMD Zen3+ (Rembrandt H Series)
+Models:
+- Ryzen™ 5 6600H (6C/12T, 3.3GHz base / 4.5GHz boost, TDP: 45W)
+- Ryzen™ 7 6800H (8C/16T, 3.2GHz base / 4.7GHz boost, TDP: 45W)
+Other: N/A
+
+[GPU]
+Models:
+- AMD Radeon™ RX 6550M (E65), 8GB GDDR6, 90W
+- AMD Radeon™ RX 6550M XT (E100), 8GB GDDR6, 90W
+Other: N/A
+
+[Memory]
+RAM: 2 x DDR5 SO-DIMM, up to 32GB DDR5 4800MHz (2 x 16GB)
+
+[LCD Connector]
+Port: Optional
+
+[Storage]
+SSD: 2 x M.2 2280 PCIe Gen4 (Lane 4) / NVMe SSD
+Capacity: Up to 8TB total (2 x 1TB default)
+
+[Wi-Fi]
+Module: 1 x M.2 2230 WiFi 6E + Bluetooth 5.2
+
+[SD Card Slot]
+Status: Not Supported
+
+[LTE]
+Status: Not Supported
+
+[Sensors]
+G-sensor: Not Supported
+Hall Sensor: Supported
+
+[Thermal Solution]
+TDP: 110W
+
+[TPM]
+Interface Type:
+- Default: AMD Pluton (Implemented in system firmware, fTPM 2.0)
+- Option 1: Hardware chip on motherboard, dTPM 2.0 (Discrete TPM)
+
+[V-Pro]
+Status: Not Supported
+
+[RTC]
+Connector: Supported
+
+[Others]
+Features: N/A
+
+
+
+[Wireless Network Configuration]
+
+[Wi-Fi]
+Chip Model: RZ608 (AMD)
+Specification: Wi-Fi 6E Tri-band (2Tx2R), 802.11ax
+Frequency Bands: 2.4GHz / 5GHz / 6GHz
+Bluetooth: Bluetooth 5.2
+Form Factor: M.2 module
+Major Chipset: MediaTek MT7921K
+Power Control: Supports Wi-Fi and Bluetooth power on/off switch
+
+[LAN]
+RJ45 Port: Gigabit LAN 10/100/1000Mbps (on motherboard)
+
+[LTE]
+M.2 Slot: Not Supported
+
+[Bluetooth]
+Status: Supported
+Version: Bluetooth 5.2
+
+
+
+[Software Configuration]
+
+[Operating System]
+System: Windows 11 SV2 (23H2), supports Modern Standby
+Compatibility: All functions compatible with Windows 11 and Linux OS
+Language Support: Multi-language supported
+
+[BIOS / EC]
+UI Specification: Standard specification
+
+
+[Accessory]
+
+[Power Adapter]
+Configuration: 1 x 230W power adapter
+Input: AC 100–240V, 50/60Hz
+Output: DC 19.5V / 11.79A
+
+
+[Certifications]
+
+[Safety Certifications]
+- CE
+- FCC
+- RoHS
