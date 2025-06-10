@@ -16,7 +16,10 @@
   </main_requirements>
 
   <Implementation>
-
+    - 請以python, fastapi, milvus, duckdb, pandas, langchain, hugginface, transformers等技術進行開發
+    - LLM採用ollama，執行deepseek-r1:14b
+    - 請以物件導向範式進行開發。
+    - 請模仿DQE_RAG_APP的UI及stream chat
   </Implementation>
 
 </Project>
