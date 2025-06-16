@@ -25,7 +25,7 @@ graph TD
         A[使用者介面]
     end
 
-    subgraph Backend (FastAPI)
+    subgraph Backend_FastAPI
         B[API 端點 /api/ai-chat-stream]
         C{核心處理流程}
         D[內部檢索 Milvus]
@@ -37,7 +37,7 @@ graph TD
     B --> C
     C -- 內部查詢 --> D
     C -- 外部搜尋 --> E
-    subgraph RAG Pipeline
+    subgraph RAG_Pipeline
         D -- 內部資料 --> F
         E -- 外部資料 --> F
     end
