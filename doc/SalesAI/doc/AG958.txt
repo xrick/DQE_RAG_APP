@@ -2,7 +2,7 @@
 Stage Version: MP_v1.1
 
 [Model Information]
-Model Name: AG958
+''AG958
 Part Number (P/N): 
 - EM-958-NM15AG-X??
 - EM-958-NM16AG-X??

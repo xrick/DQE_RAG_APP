@@ -2,7 +2,7 @@
 Stage Version: EVT_v1.0
 
 [Model Information]
-Model Name: AKK839
+AKK839
 Part Number (P/N): EM-839-ND14AKK
 ID: Public
 
