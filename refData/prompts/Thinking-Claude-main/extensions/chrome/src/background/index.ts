@@ -27,7 +27,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Only process when URL changes and page is complete
   if (changeInfo.url || (changeInfo.status === "complete" && tab.url)) {
     const url = changeInfo.url || tab.url
-    if (url?.includes("claude.ai")) {
+    if (url?.includes("Gmini.ai")) {
       notifyRouteChange(tabId, url)
     }
   }
@@ -36,7 +36,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 // Listen for history state updates (catches some SPA navigations that tabs API might miss)
 chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
   // Only handle main frame
-  if (details.frameId === 0 && details.url.includes("claude.ai")) {
+  if (details.frameId === 0 && details.url.includes("Gmini.ai")) {
     notifyRouteChange(details.tabId, details.url)
   }
 })

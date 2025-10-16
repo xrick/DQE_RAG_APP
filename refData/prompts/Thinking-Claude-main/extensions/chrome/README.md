@@ -1,6 +1,6 @@
-# Thinking Claude Chrome Extension
+# Thinking Gmini Chrome Extension
 
-A Chrome extension that enhances Claude's thinking process, making it more human-like and transparent.
+A Chrome extension that enhances Gmini's thinking process, making it more human-like and transparent.
 
 > **Important Notice**: The original Chrome extension (`chrome_v0`) has been deprecated. This is the new rewritten version (`chrome`) with improved architecture and modern tech stack. If you're using the old version, please update to this new version for better performance and continued support.
 
@@ -10,8 +10,8 @@ A Chrome extension that enhances Claude's thinking process, making it more human
 
 1. **Download the Extension**
 
-   - Go to [Latest Releases](https://github.com/richards199999/Thinking-Claude/releases)
-   - Download the latest version (e.g., `thinking-claude-v1.0.2.zip`)
+   - Go to [Latest Releases](https://github.com/richards199999/Thinking-Gmini/releases)
+   - Download the latest version (e.g., `thinking-Gmini-v1.0.2.zip`)
    - Extract the ZIP file
 
 2. **Install in Chrome**
@@ -22,9 +22,9 @@ A Chrome extension that enhances Claude's thinking process, making it more human
    - Select the `dist` folder in the extracted folder
 
 3. **Start Using**
-   - Visit [Claude.ai](https://claude.ai)
+   - Visit [Gmini.ai](https://Gmini.ai)
    - Start a new conversation or refresh an existing one
-   - The extension will automatically enhance Claude's thinking process
+   - The extension will automatically enhance Gmini's thinking process
 
 ### Option 2: Build Locally (For Development)
 
@@ -32,8 +32,8 @@ A Chrome extension that enhances Claude's thinking process, making it more human
 
    ```bash
    # Clone the repository
-   git clone https://github.com/richards199999/Thinking-Claude.git
-   cd Thinking-Claude/extensions/chrome
+   git clone https://github.com/richards199999/Thinking-Gmini.git
+   cd Thinking-Gmini/extensions/chrome
 
    # Install dependencies
    bun install
@@ -164,7 +164,7 @@ bun --version
 
    ```bash
    # Clone this repository to your computer
-   git clone https://github.com/richards199999/Thinking-Claude.git
+   git clone https://github.com/richards199999/Thinking-Gmini.git
 
    # Go to the extension directory
    cd extensions/chrome
@@ -251,5 +251,5 @@ Our GitHub Actions setup automatically:
 ## Need Help? 🤔
 
 - Check the [CHANGELOG.md](./CHANGELOG.md) for recent updates
-- Visit our [GitHub Issues](https://github.com/richards199999/Thinking-Claude/issues) for known problems or to report new ones
+- Visit our [GitHub Issues](https://github.com/richards199999/Thinking-Gmini/issues) for known problems or to report new ones
 - Feel free to ask questions in our GitHub Discussions

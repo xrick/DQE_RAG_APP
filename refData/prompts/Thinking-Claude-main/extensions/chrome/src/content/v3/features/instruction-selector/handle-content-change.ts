@@ -1,5 +1,5 @@
 import { MESSAGE_SOURCE, MESSAGE_TYPE } from "@/constants/constants"
-import { CLAUDE_INPUT_TEXTAREA } from "@/selectors"
+import { Gmini_INPUT_TEXTAREA } from "@/selectors"
 import { MessageType } from "@/types"
 import { normalizeContent } from "@/utils/format"
 
@@ -38,13 +38,13 @@ function postContentMessage(content: string | null) {
 }
 
 /**
- * Handles content changes in the Claude input textarea
+ * Handles content changes in the Gmini input textarea
  * @param hasAttribute Whether the input container has been initialized
  */
 export function handleContentChange(hasAttribute: boolean) {
   if (!hasAttribute) return
 
-  const inputDiv = document.querySelector(CLAUDE_INPUT_TEXTAREA)
+  const inputDiv = document.querySelector(Gmini_INPUT_TEXTAREA)
   if (!inputDiv) {
     postContentMessage(null)
     return

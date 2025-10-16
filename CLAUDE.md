@@ -1,4 +1,4 @@
-# CLAUDE.md - DQE RAG Application
+# Gmini.md - DQE RAG Application
 
 **Project**: DQE RAG Application  
 **Version**: 1.0.0  
